@@ -1,6 +1,6 @@
-# CS2 RANK — Player Intelligence Platform
+# PLAYER RANK — Player Intelligence Platform
 
-A full-stack CS2 player ranking and stats tracking app built with **Next.js**, **Node.js/Express**, and **MongoDB/Mongoose**.
+A full-stack playerranking and stats tracking app built with **Next.js**, **Node.js/Express**, and **MongoDB/Mongoose**.
 
 ---
 
@@ -37,7 +37,6 @@ A full-stack CS2 player ranking and stats tracking app built with **Next.js**, *
 
 ```bash
 git clone <repo>
-cd cs2-ranking
 docker-compose up --build
 ```
 
@@ -140,7 +139,7 @@ Rating =
 ## Project Structure
 
 ```
-cs2-ranking/
+PLAYER-RANK-LEADERBOARD/
 ├── backend/
 │   ├── models/
 │   │   ├── Player.js         # Player schema + rating statics
@@ -166,3 +165,7 @@ cs2-ranking/
 │   └── package.json
 └── docker-compose.yml
 ```
+<<<<<<< HEAD
+=======
+# Player-Rank-Leaderboard
+>>>>>>> 9867f88812ca54a6deae9f5cc976ae0bed14c738
