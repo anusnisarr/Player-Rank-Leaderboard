@@ -120,11 +120,11 @@ playerSchema.statics.computeRating = function (stats) {
 
 // Static method to determine tier
 playerSchema.statics.computeTier = function (rating) {
-  if (rating >= 1.3) return "S";
-  if (rating >= 1.1) return "A";
-  if (rating >= 0.9) return "B";
-  if (rating >= 0.7) return "C";
-  return "D";
+  if (rating >= 1.3) return "Elite"; 
+  if (rating >= 1.1) return "Strong";
+  if (rating >= 0.9) return "Solid";
+  if (rating >= 0.7) return "Average";
+  return "Developing";
 };
 
 // Static method to determine role

@@ -113,6 +113,7 @@ router.post("/", async (req, res) => {
   try {
     const { name, team, country, avatar } = req.body;
     const player = await Player.create({ name, team, country, avatar });
+    
     res.status(201).json({ success: true, data: player });
   } catch (err) {
     if (err.code === 11000) {

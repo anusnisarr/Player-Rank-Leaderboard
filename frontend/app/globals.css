@@ -237,3 +237,50 @@ body::before {
 .stagger-3 { animation-delay: 0.15s; opacity: 0; }
 .stagger-4 { animation-delay: 0.2s; opacity: 0; }
 .stagger-5 { animation-delay: 0.25s; opacity: 0; }
+
+/* ===== RESPONSIVE UTILITIES ===== */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Touch-friendly inputs on mobile */
+@media (max-width: 640px) {
+  .input {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+    padding: 11px 12px;
+  }
+
+  select.input {
+    font-size: 16px !important;
+  }
+
+  .btn-primary, .btn-ghost {
+    min-height: 44px; /* Touch target */
+  }
+
+  .card {
+    border-radius: 6px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 8px 10px;
+  }
+}
+
+/* Smooth scrolling for filter pills */
+.filter-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.filter-scroll::-webkit-scrollbar {
+  display: none;
+}

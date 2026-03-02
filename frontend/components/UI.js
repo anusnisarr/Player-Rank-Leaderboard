@@ -3,7 +3,10 @@ import { TIER_CONFIG, ROLE_CONFIG, getInitials, getRatingColor } from "@/lib/uti
 
 // Tier badge
 export function TierBadge({ tier, size = "sm" }) {
+  console.log("tier 1" , tier);
+  
   const cfg = TIER_CONFIG[tier] || TIER_CONFIG.D;
+  
   const sizes = {
     xs: { fontSize: 10, padding: "1px 6px", minWidth: 22 },
     sm: { fontSize: 12, padding: "2px 8px", minWidth: 28 },
@@ -59,7 +62,9 @@ export function RoleBadge({ role }) {
 // Player avatar
 export function PlayerAvatar({ name, size = 36, tier }) {
   const initials = getInitials(name || "??");
-  const cfg = TIER_CONFIG[tier] || TIER_CONFIG.D;
+  const cfg = TIER_CONFIG[tier] || TIER_CONFIG.Developing;
+  console.log("tier:", tier, "cfg:", cfg);
+  
   return (
     <div
       style={{
@@ -192,7 +197,7 @@ export function EmptyState({ title, desc, action }) {
 }
 
 // Filter button
-export function FilterBtn({ label, active, onClick }) {
+export function FilterBtn({ label, active, onClick , border , bg , color }) {
   return (
     <button
       onClick={onClick}
@@ -201,7 +206,7 @@ export function FilterBtn({ label, active, onClick }) {
         borderRadius: 5,
         fontSize: 12,
         fontWeight: active ? 600 : 400,
-        color: active ? "#E8E8F0" : "#7A7A8C",
+        color: color || (active ? "#E8E8F0" : "#7A7A8C"),
         background: active ? "#1E1E22" : "transparent",
         border: active ? "1px solid #3A3A42" : "1px solid transparent",
         cursor: "pointer",

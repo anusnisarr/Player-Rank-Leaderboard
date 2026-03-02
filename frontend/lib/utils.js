@@ -1,9 +1,10 @@
 export const TIER_CONFIG = {
-  S: { color: "#FFD700", bg: "rgba(255,215,0,0.1)", border: "rgba(255,215,0,0.3)", label: "Elite" },
-  A: { color: "#FF6B35", bg: "rgba(255,107,53,0.1)", border: "rgba(255,107,53,0.3)", label: "Strong" },
-  B: { color: "#4ECDC4", bg: "rgba(78,205,196,0.1)", border: "rgba(78,205,196,0.3)", label: "Solid" },
-  C: { color: "#A8DADC", bg: "rgba(168,218,220,0.1)", border: "rgba(168,218,220,0.3)", label: "Average" },
-  D: { color: "#6C757D", bg: "rgba(108,117,125,0.1)", border: "rgba(108,117,125,0.3)", label: "Developing" },
+  All : { color: "#E8E8F0", bg: "#1E1E22",  border: "#3A3A42", label: "All" },
+  Elite: { color: "#FFD700", bg: "rgba(255,215,0,0.1)", border: "rgba(255,215,0,0.3)", label: "Elite" },
+  Strong: { color: "#FF6B35", bg: "rgba(255,107,53,0.1)", border: "rgba(255,107,53,0.3)", label: "Strong" },
+  Solid: { color: "#4ECDC4", bg: "rgba(78,205,196,0.1)", border: "rgba(78,205,196,0.3)", label: "Solid" },
+  Average: { color: "#A8DADC", bg: "rgba(168,218,220,0.1)", border: "rgba(168,218,220,0.3)", label: "Average" },
+  S: { color: "#6C757D", bg: "rgba(108,117,125,0.1)", border: "rgba(108,117,125,0.3)", label: "Developing" },
 };
 
 export const ROLE_CONFIG = {
