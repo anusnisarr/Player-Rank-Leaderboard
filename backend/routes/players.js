@@ -21,14 +21,13 @@ router.get("/", async (req, res) => {
     const players = await Player.find(filter)
       .sort(sortObj)
       .select(
-        "name team country avatar totalRounds totalKills totalDeaths totalAssists totalHeadshots totalDamage totalKast matchesPlayed wins losses rating tier role createdAt"
+        "name team avatar totalRounds totalKills totalDeaths totalAssists totalHeadshots totalDamage totalKast matchesPlayed wins losses rating tier role createdAt"
       );
 
     const playersWithVirtuals = players.map((p) => ({
       _id: p._id,
       name: p.name,
       team: p.team,
-      country: p.country,
       avatar: p.avatar,
       matchesPlayed: p.matchesPlayed,
       wins: p.wins,
@@ -111,8 +110,8 @@ router.get("/:id", async (req, res) => {
 // POST create player
 router.post("/", async (req, res) => {
   try {
-    const { name, team, country, avatar } = req.body;
-    const player = await Player.create({ name, team, country, avatar });
+    const { name, team, avatar } = req.body;
+    const player = await Player.create({ name, team, avatar });
     
     res.status(201).json({ success: true, data: player });
   } catch (err) {
@@ -126,10 +125,10 @@ router.post("/", async (req, res) => {
 // PUT update player info
 router.put("/:id", async (req, res) => {
   try {
-    const { name, team, country, avatar } = req.body;
+    const { name, team, avatar } = req.body;
     const player = await Player.findByIdAndUpdate(
       req.params.id,
-      { name, team, country, avatar },
+      { name, team, avatar },
       { new: true, runValidators: true }
     );
     if (!player) return res.status(404).json({ success: false, error: "Player not found" });

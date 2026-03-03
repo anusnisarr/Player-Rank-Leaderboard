@@ -157,31 +157,6 @@ export default function AddMatchPage() {
         </p>
       </div>
 
-      {/* CS2 scoreboard cheatsheet */}
-      <div className="animate-slide stagger-1" style={{
-        background: "rgba(255,70,85,0.05)",
-        border: "1px solid rgba(255,70,85,0.15)",
-        borderRadius: 8,
-        padding: "14px 16px",
-        marginBottom: 20,
-        display: "flex",
-        gap: 12,
-        alignItems: "flex-start",
-        flexWrap: "wrap",
-      }}>
-        <div style={{ fontSize: 18, flexShrink: 0 }}>💡</div>
-        <div style={{ fontSize: 13, color: "#A8A8BC", lineHeight: 1.7 }}>
-          <span style={{ color: "#E8E8F0", fontWeight: 600 }}>Copy from CS2 scoreboard: </span>
-          <span style={{ fontFamily: "'JetBrains Mono'", color: "#FF4655" }}>K</span> → Kills &nbsp;·&nbsp;
-          <span style={{ fontFamily: "'JetBrains Mono'", color: "#FF4655" }}>D</span> → Deaths &nbsp;·&nbsp;
-          <span style={{ fontFamily: "'JetBrains Mono'", color: "#FF4655" }}>A</span> → Assists &nbsp;·&nbsp;
-          <span style={{ fontFamily: "'JetBrains Mono'", color: "#FF4655" }}>HS%</span> → enter as-is &nbsp;·&nbsp;
-          <span style={{ fontFamily: "'JetBrains Mono'", color: "#FF4655" }}>DMG</span> → Damage
-          <br />
-          <span style={{ color: "#7A7A8C", fontSize: 12 }}>Headshots & KAST% are calculated automatically. You can override KAST% manually if needed.</span>
-        </div>
-      </div>
-
       <form onSubmit={handleSubmit}>
 
         {/* Match info */}

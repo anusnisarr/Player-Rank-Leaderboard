@@ -3,7 +3,6 @@ import { TIER_CONFIG, ROLE_CONFIG, getInitials, getRatingColor } from "@/lib/uti
 
 // Tier badge
 export function TierBadge({ tier, size = "sm" }) {
-  console.log("tier 1" , tier);
   
   const cfg = TIER_CONFIG[tier] || TIER_CONFIG.D;
   
@@ -63,7 +62,6 @@ export function RoleBadge({ role }) {
 export function PlayerAvatar({ name, size = 36, tier }) {
   const initials = getInitials(name || "??");
   const cfg = TIER_CONFIG[tier] || TIER_CONFIG.Developing;
-  console.log("tier:", tier, "cfg:", cfg);
   
   return (
     <div

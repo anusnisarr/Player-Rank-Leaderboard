@@ -8,11 +8,6 @@ const playerSchema = new mongoose.Schema(
       trim: true,
       unique: true,
     },
-    team: {
-      type: String,
-      trim: true,
-      default: "Unaffiliated",
-    },
     avatar: {
       type: String,
       default: null,

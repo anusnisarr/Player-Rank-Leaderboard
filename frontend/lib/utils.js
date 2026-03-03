@@ -4,7 +4,7 @@ export const TIER_CONFIG = {
   Strong: { color: "#FF6B35", bg: "rgba(255,107,53,0.1)", border: "rgba(255,107,53,0.3)", label: "Strong" },
   Solid: { color: "#4ECDC4", bg: "rgba(78,205,196,0.1)", border: "rgba(78,205,196,0.3)", label: "Solid" },
   Average: { color: "#A8DADC", bg: "rgba(168,218,220,0.1)", border: "rgba(168,218,220,0.3)", label: "Average" },
-  S: { color: "#6C757D", bg: "rgba(108,117,125,0.1)", border: "rgba(108,117,125,0.3)", label: "Developing" },
+  Developing: { color: "#6C757D", bg: "rgba(108,117,125,0.1)", border: "rgba(108,117,125,0.3)", label: "Developing" },
 };
 
 export const ROLE_CONFIG = {
