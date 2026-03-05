@@ -19,10 +19,13 @@ export default function MatchesPage() {
 
   useEffect(() => { fetchMatches(); }, []);
 
+  // const handleDelete = async (id, title) => {
+  //   if (!confirm(`Delete "${title}"? Stats will be recalculated.`)) return;
+  //   try { await deleteMatch(id); toast.success("Match deleted"); fetchMatches(); }
+  //   catch { toast.error("Failed to delete match"); }
+  // };
   const handleDelete = async (id, title) => {
-    if (!confirm(`Delete "${title}"? Stats will be recalculated.`)) return;
-    try { await deleteMatch(id); toast.success("Match deleted"); fetchMatches(); }
-    catch { toast.error("Failed to delete match"); }
+    toast.error("You are not authorized to delete matches!");
   };
 
   return (

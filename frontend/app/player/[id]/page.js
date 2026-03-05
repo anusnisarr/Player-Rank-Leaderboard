@@ -19,10 +19,14 @@ export default function PlayerPage() {
     getPlayer(id).then((r) => setPlayer(r.data.data)).catch(() => toast.error("Player not found")).finally(() => setLoading(false));
   }, [id]);
 
+  // const handleDelete = async () => {
+  //   if (!confirm(`Delete ${player.name}?`)) return;
+  //   try { await deletePlayer(id); toast.success("Player deleted"); router.push("/"); }
+  //   catch { toast.error("Failed to delete"); }
+  // };
+
   const handleDelete = async () => {
-    if (!confirm(`Delete ${player.name}?`)) return;
-    try { await deletePlayer(id); toast.success("Player deleted"); router.push("/"); }
-    catch { toast.error("Failed to delete"); }
+     toast.error("You are not authorized to delete players!"); 
   };
 
   if (loading) return <div style={{ maxWidth: 1000, margin: "0 auto", padding: "80px 16px", textAlign: "center", color: "#7A7A8C" }}>Loading...</div>;
