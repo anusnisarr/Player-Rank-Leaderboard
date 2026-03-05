@@ -29,7 +29,7 @@ const playerSchema = new mongoose.Schema(
     losses: { type: Number, default: 0 },
     // Computed rating (cached)
     rating: { type: Number, default: 0 },
-    tier: { type: String, default: "D" },
+    tier: { type: String, default: "Developing" },
     role: { type: String, default: "Lurker" },
   },
   {

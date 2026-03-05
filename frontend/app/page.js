@@ -81,31 +81,160 @@ export default function LeaderboardPage() {
 
       {/* Podium top 3 */}
       {!loading && top3.length >= 3 && (
-        <div className="animate-slide stagger-2 podium-grid" style={{ marginBottom: 28 }}>
-          {[top3[1], top3[0], top3[2]].map((p, i) => {
-            const actualRank = i === 1 ? 1 : i === 0 ? 2 : 3;
-            const cfg = TIER_CONFIG[p.tier] || TIER_CONFIG.D;
-            const isFirst = actualRank === 1;
-            return (
-              <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none" }}>
-                <div className="card" style={{ padding: "20px 14px", textAlign: "center", cursor: "pointer", transform: isFirst ? "translateY(-6px)" : "none", borderColor: isFirst ? cfg.border : undefined, position: "relative", overflow: "hidden" }}>
-                  {isFirst && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: cfg.color }} />}
-                  <div style={{ fontSize: 24, marginBottom: 8 }}>{["🥇", "🥈", "🥉"][actualRank - 1]}</div>
-                  <PlayerAvatar name={p.name} size={44} tier={p.tier} />
-                  <div style={{ marginTop: 10, fontWeight: 600, fontSize: 14, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
-                  <div style={{ fontSize: 11, color: "#7A7A8C", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.team}</div>
-                  <div style={{ marginTop: 10 }}>
-                    <RatingDisplay rating={p.rating} size="md" />
-                    <div style={{ fontSize: 9, color: "#7A7A8C", marginTop: 1, fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em" }}>RATING</div>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
-                    <TierBadge tier={p.tier} size="xs" />
-                    {!isMobile && <RoleBadge role={p.role} />}
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+        <div className="animate-slide stagger-2" style={{ marginBottom: 28 }}>
+
+          {/* Mobile: horizontal ranked list */}
+          {isMobile ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {[top3[0], top3[1], top3[2]].map((p, i) => {
+                const cfg = TIER_CONFIG[p.tier] || TIER_CONFIG.D;
+                const medals = ["🥇", "🥈", "🥉"];
+                const rankColors = ["#FFD700", "#C0C0C0", "#CD7F32"];
+                return (
+                  <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none" }}>
+                    <div
+                      className="card"
+                      style={{
+                        padding: "14px 16px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 14,
+                        position: "relative",
+                        overflow: "hidden",
+                        borderColor: i === 0 ? cfg.border : undefined,
+                      }}
+                    >
+                      {/* Left accent bar for #1 */}
+                      {i === 0 && (
+                        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: cfg.color }} />
+                      )}
+
+                      {/* Medal */}
+                      <div style={{ fontSize: 26, flexShrink: 0, marginLeft: i === 0 ? 6 : 0 }}>
+                        {medals[i]}
+                      </div>
+
+                      {/* Avatar */}
+                      <PlayerAvatar name={p.name} size={42} tier={p.tier} />
+
+                      {/* Name + team */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: 15, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {p.name}
+                        </div>
+                        <div style={{ fontSize: 12, color: "#7A7A8C", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {p.team || "—"}
+                        </div>
+                        <div style={{ display: "flex", gap: 6, marginTop: 5, alignItems: "center" }}>
+                          <TierBadge tier={p.tier} size="xs" />
+                          <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>
+                            {p.role}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Right: rating + KD */}
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <RatingDisplay rating={p.rating} size="md" />
+                        <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>
+                          RATING
+                        </div>
+                        <div style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", marginTop: 4 }}>
+                          {p.kd} <span style={{ color: "#3A3A42" }}>K/D</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+          ) : (
+            /* Desktop: classic podium layout — 2nd | 1st | 3rd */
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1.1fr 1fr",
+              gap: 12,
+              alignItems: "end",
+            }}>
+              {[top3[1], top3[0], top3[2]].map((p, i) => {
+                const actualRank = i === 1 ? 1 : i === 0 ? 2 : 3;
+                const cfg = TIER_CONFIG[p.tier] || TIER_CONFIG.D;
+                const isFirst = actualRank === 1;
+                const heights = { 0: "auto", 1: "auto", 2: "auto" };
+                return (
+                  <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none" }}>
+                    <div
+                      className="card"
+                      style={{
+                        padding: "24px 14px 20px",
+                        textAlign: "center",
+                        cursor: "pointer",
+                        transform: isFirst ? "translateY(-10px)" : "none",
+                        borderColor: isFirst ? cfg.border : undefined,
+                        position: "relative",
+                        overflow: "hidden",
+                        transition: "transform 0.2s ease, border-color 0.2s ease",
+                      }}
+                    >
+                      {/* Top accent line for #1 */}
+                      {isFirst && (
+                        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: cfg.color }} />
+                      )}
+
+                      {/* Medal */}
+                      <div style={{ fontSize: 28, marginBottom: 10 }}>
+                        {["🥇", "🥈", "🥉"][actualRank - 1]}
+                      </div>
+
+                      {/* Avatar */}
+                      <PlayerAvatar name={p.name} size={isFirst ? 52 : 44} tier={p.tier} />
+
+                      {/* Name */}
+                      <div style={{ marginTop: 10, fontWeight: 600, fontSize: isFirst ? 15 : 13, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {p.name}
+                      </div>
+
+                      {/* Team */}
+                      <div style={{ fontSize: 11, color: "#7A7A8C", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {p.team || "—"}
+                      </div>
+
+                      {/* Rating */}
+                      <div style={{ marginTop: 10 }}>
+                        <RatingDisplay rating={p.rating} size={isFirst ? "lg" : "md"} />
+                        <div style={{ fontSize: 9, color: "#7A7A8C", marginTop: 1, fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em" }}>
+                          RATING
+                        </div>
+                      </div>
+
+                      {/* Badges */}
+                      <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
+                        <TierBadge tier={p.tier} size="xs" />
+                        <RoleBadge role={p.role} />
+                      </div>
+
+                      {/* Extra stats for #1 on desktop */}
+                      {isFirst && (
+                        <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 12, paddingTop: 12, borderTop: "1px solid #1E1E22" }}>
+                          {[
+                            { label: "K/D", val: p.kd },
+                            { label: "ADR", val: p.adr },
+                            { label: "HS%", val: `${p.hsr}%` },
+                          ].map(({ label, val }) => (
+                            <div key={label} style={{ textAlign: "center" }}>
+                              <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 13, color: "#E8E8F0" }}>{val}</div>
+                              <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>{label}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
