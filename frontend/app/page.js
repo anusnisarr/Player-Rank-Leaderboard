@@ -87,8 +87,9 @@ export default function LeaderboardPage() {
             { label: "Kill",   val: "+3 pts",    color: "#4ECDC4" },
             { label: "Assist", val: "+1.5 pts",  color: "#A8DADC" },
             { label: "Death",  val: "−2 pts",    color: "#FF4655" },
-            { label: "HS%",    val: "×0.3 pts",  color: "#FFD700" },
-            { label: "ADR",    val: "×0.15 pts", color: "#FF6B35" },
+            { label: "Headshot%",    val: "×0.2 pts",  color: "#FFD700" },
+            { label: "Average Damage Round",   val: "×0.05 pts", color: "#FF6B35" },
+            { label: "Kill-Death Ratio",   val: "×5 pts", color: "#4ECDC4" },
           ].map(({ label, val, color }) => (
             <div key={label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
               <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{label}</span>

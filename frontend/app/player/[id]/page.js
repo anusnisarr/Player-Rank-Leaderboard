@@ -167,13 +167,12 @@ export default function PlayerPage() {
               {RANK_ORDER.map(r => {
                 const rc = RANK_CONFIG[r];
                 const next = RANK_ORDER[RANK_ORDER.indexOf(r) - 1];
-                const nextMin = next ? RANK_CONFIG[next].min : 100;
                 const isActive = player.rank === r;
                 return (
                   <div key={r} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 6, background: isActive ? rc.bg : "transparent", border: isActive ? `1px solid ${rc.border}` : "1px solid transparent", marginBottom: 4 }}>
                     <span style={{ fontSize: 16 }}>{rc.icon}</span>
                     <span style={{ fontWeight: 600, color: rc.color, fontSize: 13, minWidth: 90 }}>{r}</span>
-                    <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{rc.min}+ pts</span>
+                    <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{rc.scoreRange}</span>
                     {isActive && <span style={{ marginLeft: "auto", fontSize: 10, color: rc.color }}>← YOU</span>}
                   </div>
                 );
@@ -184,10 +183,12 @@ export default function PlayerPage() {
             <div className="card" style={{ padding: 20 }}>
               <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", color: "#7A7A8C", marginBottom: 14 }}>How Score Works</div>
               {[
-                { icon: "💚", text: `${player.avgKills} avg kills × 3`, pts: `+${(player.avgKills * 3).toFixed(1)}`, color: "#4ECDC4" },
-                { icon: "💛", text: `${player.avgAssists} avg assists × 1.5`, pts: `+${(player.avgAssists * 1.5).toFixed(1)}`, color: "#A8DADC" },
-                { icon: "❤️", text: `${player.avgDeaths} avg deaths × 2`, pts: `-${(player.avgDeaths * 2).toFixed(1)}`, color: "#FF4655" },
-                { icon: "🎯", text: `${player.hsp}% headshot × 0.3`, pts: `+${(player.hsp * 0.3).toFixed(1)}`, color: "#FFD700" },
+                { icon: "💚", text: `${player.totalKills} total kills × 3`, pts: `+${(player.avgKills * 3).toFixed(1)}`, color: "#4ECDC4" },
+                { icon: "💛", text: `${player.totalAssists} total assists × 1.5`, pts: `+${(player.avgAssists * 1.5).toFixed(1)}`, color: "#A8DADC" },
+                { icon: "❤️", text: `${player.totalDeaths} total deaths × 2`, pts: `-${(player.avgDeaths * 2).toFixed(1)}`, color: "#FF4655" },
+                { icon: "🎯", text: `${player.hsp}% headshot × 0.2`, pts: `+${(player.hsp * 0.2).toFixed(1)}`, color: "#FFD700" },
+                { icon: "🎯", text: `${((player.totalDamage / player.matchesPlayed )/ 100).toFixed(1)} damage × 0.5`, pts: `+${((player.totalDamage / player.matchesPlayed / 100) * 0.5).toFixed(1)}`, color: "#FFD700" },
+                { icon: "🎯", text: `${((player.totalKills / player.totalDeaths)).toFixed(1)} K/D ratio × 5`, pts: `+${((player.totalKills / player.totalDeaths) * 5).toFixed(1)}`, color: "#FFD700" }
               ].map(({ icon, text, pts, color }) => (
                 <div key={text} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: "1px solid #1E1E22" }}>
                   <div style={{ fontSize: 13, color: "#A8A8BC" }}>{icon} {text}</div>

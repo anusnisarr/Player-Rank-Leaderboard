@@ -86,21 +86,24 @@ playerSchema.virtual("avgDamage").get(function () {
 playerSchema.statics.computeScore = function ({ kills=0, deaths=0, assists=0, headshots=0, damage=0, rounds=1 }) {
   if (!rounds || rounds === 0) return 0;
 
+  const kd = kills / deaths
   const hsp = kills > 0 ? (headshots / kills) * 100 : 0;
   const adr = damage / rounds;
+  const adr_normalized = adr / 100;
 
-  const raw = (kills * 3) + (assists * 1.5) - (deaths * 2) + (hsp * 0.3) + (adr * 0.15);
+  const raw = (kills * 3) + (assists * 1.5) - (deaths * 2) + (hsp * 0.2) + (adr_normalized * 0.5) + (kd * 5);
 
-  return +Math.min(100, Math.max(0, raw)).toFixed(1);
+  return Number(raw.toFixed(1));
 };
 
 // ─── Rank label ───────────────────────────────────────────────────────────────
 playerSchema.statics.computeRank = function (score) {
-  if (score >= 80) return "Fragmaster";
-  if (score >= 65) return "Fragger";
-  if (score >= 50) return "Soldier";
-  if (score >= 35) return "Fighter";
-  return "Rookie";
+  if (score <= 30) return "Recruit";
+  if (score <= 45) return "Bronze";
+  if (score <= 55) return "Silver";
+  if (score <= 65) return "Gold";
+  if (score <= 75) return "Platinum";
+  return "Elite";
 };
 
 module.exports = mongoose.model("Player", playerSchema);
