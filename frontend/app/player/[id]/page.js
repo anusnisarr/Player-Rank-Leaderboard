@@ -2,8 +2,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getPlayer, deletePlayer } from "@/lib/api";
-import { TIER_CONFIG, ROLE_CONFIG, getRatingColor, timeAgo } from "@/lib/utils";
-import { TierBadge, RoleBadge, PlayerAvatar, RatingDisplay } from "@/components/UI";
+import { RANK_CONFIG, RANK_ORDER, getScoreColor, timeAgo } from "@/lib/utils";
+import { RankBadge, ScoreDisplay, ScoreBar, PlayerAvatar } from "@/components/UI";
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import toast from "react-hot-toast";
 
@@ -16,103 +16,113 @@ export default function PlayerPage() {
 
   useEffect(() => {
     if (!id) return;
-    getPlayer(id).then((r) => setPlayer(r.data.data)).catch(() => toast.error("Player not found")).finally(() => setLoading(false));
+    getPlayer(id).then(r => setPlayer(r.data.data)).catch(() => toast.error("Player not found")).finally(() => setLoading(false));
   }, [id]);
 
-  // const handleDelete = async () => {
-  //   if (!confirm(`Delete ${player.name}?`)) return;
-  //   try { await deletePlayer(id); toast.success("Player deleted"); router.push("/"); }
-  //   catch { toast.error("Failed to delete"); }
-  // };
+  if (loading) return <div style={{ maxWidth: 900, margin: "0 auto", padding: "80px 16px", textAlign: "center", color: "#7A7A8C" }}>Loading...</div>;
+  if (!player)  return <div style={{ maxWidth: 900, margin: "0 auto", padding: "80px 16px", textAlign: "center", color: "#7A7A8C" }}>Player not found.</div>;
+
+  const cfg = RANK_CONFIG[player.rank] || RANK_CONFIG["Rookie"];
+
+  // Radar: simple 0-100 normalized stats any friend can understand
+  const radarData = [
+    { stat: "Kills",    value: Math.min(100, (player.avgKills / 25) * 100) },
+    { stat: "Survival", value: Math.min(100, Math.max(0, 100 - (player.avgDeaths / 20) * 100)) },
+    { stat: "Assists",  value: Math.min(100, (player.avgAssists / 10) * 100) },
+    { stat: "HS%",      value: Math.min(100, player.hsp) },
+    { stat: "Damage",   value: Math.min(100, (player.adr / 150) * 100) },
+    { stat: "Wins",     value: Math.min(100, player.winRate) },
+  ];
+
+  const historyChart = (player.matchHistory || []).slice().reverse().map((m, i) => ({
+    match: i + 1,
+    score: m.score,
+    kills: m.kills,
+  }));
 
   const handleDelete = async () => {
-     toast.error("You are not authorized to delete players!"); 
+    if (!confirm(`Delete ${player.name}?`)) return;
+    try { await deletePlayer(id); toast.success("Player deleted"); router.push("/"); }
+    catch { toast.error("Failed to delete"); }
   };
 
-  if (loading) return <div style={{ maxWidth: 1000, margin: "0 auto", padding: "80px 16px", textAlign: "center", color: "#7A7A8C" }}>Loading...</div>;
-  if (!player) return <div style={{ maxWidth: 1000, margin: "0 auto", padding: "80px 16px", textAlign: "center", color: "#7A7A8C" }}>Player not found.</div>;
-
-  const cfg = TIER_CONFIG[player.tier] || TIER_CONFIG.D;
-  const roleCfg = ROLE_CONFIG[player.role] || { icon: "👤", desc: "" };
-
-  const radarData = [
-    { stat: "Kills", value: Math.min(100, (player.kpr / 1.2) * 100) },
-    { stat: "Survival", value: Math.min(100, ((1 - player.dpr)) * 100) },
-    { stat: "Assists", value: Math.min(100, (player.apr / 0.6) * 100) },
-    { stat: "HS%", value: Math.min(100, player.hsr) },
-    { stat: "ADR", value: Math.min(100, (player.adr / 120) * 100) },
-    { stat: "KAST", value: Math.min(100, player.avgKast) },
-  ];
-
-  const historyChartData = (player.matchHistory || []).slice().reverse().map((m, i) => ({ match: i + 1, rating: m.rating, label: m.title?.slice(0, 16) }));
-
-  const keyStats = [
-    { label: "K/D", value: player.kd, color: getRatingColor(player.kd * 0.7) },
-    { label: "KPR", value: player.kpr },
-    { label: "DPR", value: player.dpr, color: player.dpr > 0.8 ? "#FF4655" : undefined },
-    { label: "APR", value: player.apr, color: "#4ECDC4" },
-    { label: "ADR", value: player.adr },
-    { label: "HS%", value: `${player.hsr}%` },
-    { label: "KAST%", value: `${player.avgKast}%` },
-    { label: "Kills", value: player.totalKills },
-    { label: "Deaths", value: player.totalDeaths },
-    { label: "Assists", value: player.totalAssists },
-  ];
+    // Stat cell helper
+  const Stat = ({ label, value, color, sub }) => (
+    <div style={{ background: "#111113", padding: "14px 10px", textAlign: "center" }}>
+      <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 16, fontWeight: 600, color: color || "#E8E8F0" }}>{value ?? "—"}</div>
+      {sub && <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 11, color: "#4ECDC4", marginTop: 2 }}>{sub}</div>}
+      <div style={{ fontSize: 9, color: "#7A7A8C", textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "'JetBrains Mono'", marginTop: 4 }}>{label}</div>
+    </div>
+  );
 
   return (
-    <div style={{ maxWidth: 1000, margin: "0 auto", padding: "20px 16px" }}>
-      {/* Header card */}
+    <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px" }}>
+
+      {/* ── Profile header ── */}
       <div className="card animate-slide stagger-1" style={{ padding: "20px 16px", marginBottom: 16, position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: cfg.color }} />
-
+ 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
-            <PlayerAvatar name={player.name} size={60} tier={player.tier} />
+            <PlayerAvatar name={player.name} size={64} rank={player.rank} />
             <div style={{ minWidth: 0 }}>
-              <h1 style={{ fontFamily: "'Bebas Neue', cursive", fontSize: "clamp(28px, 6vw, 42px)", letterSpacing: "0.04em", color: "#E8E8F0", lineHeight: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <h1 style={{ fontFamily: "'Bebas Neue', cursive", fontSize: "clamp(26px, 6vw, 40px)", color: "#E8E8F0", lineHeight: 1, letterSpacing: "0.04em" }}>
                 {player.name}
               </h1>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
-                {player.team && <span style={{ fontSize: 13, color: "#A8A8BC" }}>{player.team}</span>}
-                <TierBadge tier={player.tier} size="sm" />
-                <RoleBadge role={player.role} />
+              <div style={{ display: "flex", gap: 8, marginTop: 6, flexWrap: "wrap", alignItems: "center" }}>
+                {player.team    && <span style={{ fontSize: 13, color: "#A8A8BC" }}>{player.team}</span>}
+                {player.country && <span style={{ fontSize: 13, color: "#7A7A8C" }}>{player.country}</span>}
               </div>
-              {player.country && <div style={{ fontSize: 12, color: "#7A7A8C", marginTop: 4 }}>{player.country}</div>}
+              <div style={{ marginTop: 8 }}><RankBadge rank={player.rank} size="md" /></div>
             </div>
           </div>
-
-          <div style={{ display: "flex", gap: 20, alignItems: "center", flexShrink: 0 }}>
-            <div style={{ textAlign: "center" }}>
-              <RatingDisplay rating={player.rating} size="xl" />
-              <div style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2 }}>Rating</div>
+ 
+          <div style={{ textAlign: "right", flexShrink: 0 }}>
+            <ScoreDisplay score={player.score} size="xl" />
+            <div style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2 }}>
+              Performance Score
             </div>
-            <div>
-              <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 14 }}>
-                <span style={{ color: "#4ECDC4" }}>{player.wins}W</span>
-                <span style={{ color: "#3A3A42", margin: "0 3px" }}>–</span>
-                <span style={{ color: "#FF4655" }}>{player.losses}L</span>
-              </div>
-              <div style={{ fontSize: 11, color: "#7A7A8C", marginTop: 2 }}>{player.winRate}% WR</div>
-              <div style={{ fontSize: 11, color: "#7A7A8C" }}>{player.matchesPlayed} matches</div>
+            <div style={{ marginTop: 8, width: 130, marginLeft: "auto" }}>
+              <ScoreBar score={player.score} height={5} />
+            </div>
+            <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 13, marginTop: 8 }}>
+              <span style={{ color: "#4ECDC4" }}>{player.wins}W</span>
+              <span style={{ color: "#3A3A42", margin: "0 4px" }}>–</span>
+              <span style={{ color: "#FF4655" }}>{player.losses}L</span>
+              <span style={{ color: "#7A7A8C", fontSize: 11, marginLeft: 6 }}>{player.winRate}% WR</span>
             </div>
           </div>
         </div>
-
-        {/* Stats row */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 1, marginTop: 16, background: "#1E1E22", borderRadius: 6, overflow: "hidden" }} className="stats-row">
-          {keyStats.slice(0, 10).map(({ label, value, color }) => (
-            <div key={label} style={{ background: "#111113", padding: "10px 6px", textAlign: "center" }}>
-              <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 13, fontWeight: 500, color: color || "#E8E8F0" }}>{value}</div>
-              <div style={{ fontSize: 9, color: "#7A7A8C", textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "'JetBrains Mono'", marginTop: 2 }}>{label}</div>
-            </div>
-          ))}
+ 
+        {/* ── Career Totals ── */}
+        <div style={{ marginTop: 16 }}>
+          <div style={{ fontSize: 10, color: "#3A3A42", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Career Totals</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 1, background: "#1E1E22", borderRadius: 7, overflow: "hidden" }}>
+            <Stat label="Kills"   value={player.totalKills}   color="#4ECDC4" />
+            <Stat label="Deaths"  value={player.totalDeaths}  color="#FF4655" />
+            <Stat label="Assists" value={player.totalAssists} />
+            <Stat label="HS%"     value={`${player.hsp}%`}   color="#FFD700" />
+            <Stat label="Matches" value={player.matchesPlayed} />
+          </div>
+        </div>
+ 
+        {/* ── Per Match Averages ── */}
+        <div style={{ marginTop: 10 }}>
+          <div style={{ fontSize: 10, color: "#3A3A42", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Per Match Averages</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 1, background: "#1E1E22", borderRadius: 7, overflow: "hidden" }}>
+            <Stat label="Avg Kills"   value={player.avgKills}   color="#4ECDC4" />
+            <Stat label="Avg Deaths"  value={player.avgDeaths}  color="#FF4655" />
+            <Stat label="Avg Assists" value={player.avgAssists} />
+            <Stat label="Avg Damage"  value={player.avgDamage}  color="#FF6B35" />
+            <Stat label="K/D"         value={player.kd}         color={getScoreColor((player.kd || 0) * 40)} />
+          </div>
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* ── Tabs ── */}
       <div style={{ display: "flex", gap: 4, marginBottom: 16, justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", gap: 4 }}>
-          {["overview", "history"].map((t) => (
+          {["overview", "history"].map(t => (
             <button key={t} onClick={() => setTab(t)}
               style={{ padding: "7px 14px", borderRadius: 6, fontSize: 13, fontWeight: tab === t ? 600 : 400, color: tab === t ? "#E8E8F0" : "#7A7A8C", background: tab === t ? "#1E1E22" : "transparent", border: tab === t ? "1px solid #3A3A42" : "1px solid transparent", cursor: "pointer", textTransform: "capitalize", fontFamily: "'DM Sans'" }}>
               {t}
@@ -124,71 +134,88 @@ export default function PlayerPage() {
         </button>
       </div>
 
-      {/* Overview */}
+      {/* ── Overview ── */}
       {tab === "overview" && (
         <div className="animate-fade overview-grid">
+          {/* Radar */}
           <div className="card" style={{ padding: 20 }}>
-            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono'", letterSpacing: "0.08em", textTransform: "uppercase", color: "#7A7A8C", marginBottom: 16 }}>Performance Radar</div>
+            <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", color: "#7A7A8C", marginBottom: 14 }}>Skill Radar</div>
             <ResponsiveContainer width="100%" height={240}>
               <RadarChart data={radarData}>
                 <PolarGrid stroke="#1E1E22" />
-                <PolarAngleAxis dataKey="stat" tick={{ fill: "#7A7A8C", fontSize: 10, fontFamily: "'JetBrains Mono'" }} />
-                <Radar name={player.name} dataKey="value" stroke={cfg.color} fill={cfg.color} fillOpacity={0.15} strokeWidth={2} />
+                <PolarAngleAxis dataKey="stat" tick={{ fill: "#7A7A8C", fontSize: 11, fontFamily: "'JetBrains Mono'" }} />
+                <Radar dataKey="value" stroke={cfg.color} fill={cfg.color} fillOpacity={0.15} strokeWidth={2} />
               </RadarChart>
             </ResponsiveContainer>
           </div>
 
+          {/* Rank breakdown */}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div className="card" style={{ padding: 20 }}>
-              <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono'", letterSpacing: "0.08em", textTransform: "uppercase", color: "#7A7A8C", marginBottom: 14 }}>Tier</div>
-              <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12 }}>
-                <TierBadge tier={player.tier} size="lg" />
+              <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", color: "#7A7A8C", marginBottom: 14 }}>Rank</div>
+              <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 16 }}>
+                <span style={{ fontSize: 32 }}>{cfg.icon}</span>
                 <div>
-                  <div style={{ fontWeight: 600, color: cfg.color }}>{cfg.label}</div>
-                  <div style={{ fontSize: 12, color: "#7A7A8C" }}>{player.rating?.toFixed(3)} rating</div>
+                  <div style={{ fontWeight: 700, fontSize: 18, color: cfg.color }}>{player.rank}</div>
+                  <div style={{ fontSize: 12, color: "#7A7A8C" }}>Score: {player.score} / 100</div>
                 </div>
               </div>
-              {["Elite", "Strong", "Solid", "Average", "Developing"].map((t) => {
-                const tc = TIER_CONFIG[t];
-                const isActive = player.tier === t;
-                const labels = { S: "1.30+", A: "1.10–1.29", B: "0.90–1.09", C: "0.70–0.89", D: "<0.70" };
+              <div style={{ marginBottom: 16 }}>
+                <ScoreBar score={player.score} height={6} />
+              </div>
+              {/* Rank ladder */}
+              {RANK_ORDER.map(r => {
+                const rc = RANK_CONFIG[r];
+                const next = RANK_ORDER[RANK_ORDER.indexOf(r) - 1];
+                const nextMin = next ? RANK_CONFIG[next].min : 100;
+                const isActive = player.rank === r;
                 return (
-                  <div key={t} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 5, background: isActive ? tc.bg : "transparent", border: isActive ? `1px solid ${tc.border}` : "1px solid transparent", marginBottom: 3 }}>
-                    <span style={{ fontFamily: "'Bebas Neue'", fontSize: 13, color: tc.color, minWidth: 12 }}>{t}</span>
-                    <span style={{ fontSize: 11, color: isActive ? "#E8E8F0" : "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{labels[t]}</span>
-                    {isActive && <span style={{ marginLeft: "auto", fontSize: 10, color: tc.color }}>← YOU</span>}
+                  <div key={r} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 6, background: isActive ? rc.bg : "transparent", border: isActive ? `1px solid ${rc.border}` : "1px solid transparent", marginBottom: 4 }}>
+                    <span style={{ fontSize: 16 }}>{rc.icon}</span>
+                    <span style={{ fontWeight: 600, color: rc.color, fontSize: 13, minWidth: 90 }}>{r}</span>
+                    <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{rc.min}+ pts</span>
+                    {isActive && <span style={{ marginLeft: "auto", fontSize: 10, color: rc.color }}>← YOU</span>}
                   </div>
                 );
               })}
             </div>
 
+            {/* Score breakdown */}
             <div className="card" style={{ padding: 20 }}>
-              <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono'", letterSpacing: "0.08em", textTransform: "uppercase", color: "#7A7A8C", marginBottom: 12 }}>Role</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                <span style={{ fontSize: 28 }}>{roleCfg.icon}</span>
-                <div>
-                  <div style={{ fontWeight: 600, color: "#E8E8F0" }}>{player.role}</div>
-                  <div style={{ fontSize: 12, color: "#7A7A8C" }}>{roleCfg.desc}</div>
+              <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", color: "#7A7A8C", marginBottom: 14 }}>How Score Works</div>
+              {[
+                { icon: "💚", text: `${player.avgKills} avg kills × 3`, pts: `+${(player.avgKills * 3).toFixed(1)}`, color: "#4ECDC4" },
+                { icon: "💛", text: `${player.avgAssists} avg assists × 1.5`, pts: `+${(player.avgAssists * 1.5).toFixed(1)}`, color: "#A8DADC" },
+                { icon: "❤️", text: `${player.avgDeaths} avg deaths × 2`, pts: `-${(player.avgDeaths * 2).toFixed(1)}`, color: "#FF4655" },
+                { icon: "🎯", text: `${player.hsp}% headshot × 0.3`, pts: `+${(player.hsp * 0.3).toFixed(1)}`, color: "#FFD700" },
+              ].map(({ icon, text, pts, color }) => (
+                <div key={text} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: "1px solid #1E1E22" }}>
+                  <div style={{ fontSize: 13, color: "#A8A8BC" }}>{icon} {text}</div>
+                  <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 13, fontWeight: 600, color }}>{pts}</div>
                 </div>
+              ))}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0 0" }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#E8E8F0" }}>Avg Score</div>
+                <ScoreDisplay score={player.score} size="md" />
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* History */}
+      {/* ── Match History ── */}
       {tab === "history" && (
         <div className="animate-fade">
-          {historyChartData.length > 1 && (
+          {historyChart.length > 1 && (
             <div className="card" style={{ padding: 20, marginBottom: 14 }}>
-              <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono'", letterSpacing: "0.08em", textTransform: "uppercase", color: "#7A7A8C", marginBottom: 14 }}>Rating Trend</div>
+              <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", color: "#7A7A8C", marginBottom: 14 }}>Score Trend</div>
               <ResponsiveContainer width="100%" height={180}>
-                <LineChart data={historyChartData}>
+                <LineChart data={historyChart}>
                   <CartesianGrid stroke="#1E1E22" strokeDasharray="3 3" />
                   <XAxis dataKey="match" tick={{ fill: "#7A7A8C", fontSize: 10, fontFamily: "'JetBrains Mono'" }} />
-                  <YAxis domain={["auto", "auto"]} tick={{ fill: "#7A7A8C", fontSize: 10, fontFamily: "'JetBrains Mono'" }} width={36} />
+                  <YAxis domain={[0, 100]} tick={{ fill: "#7A7A8C", fontSize: 10, fontFamily: "'JetBrains Mono'" }} width={30} />
                   <Tooltip contentStyle={{ background: "#111113", border: "1px solid #1E1E22", borderRadius: 5, color: "#E8E8F0", fontFamily: "'JetBrains Mono'", fontSize: 11 }} />
-                  <Line type="monotone" dataKey="rating" stroke="#FF4655" strokeWidth={2} dot={{ fill: "#FF4655", r: 2 }} />
+                  <Line type="monotone" dataKey="score" stroke={cfg.color} strokeWidth={2} dot={{ fill: cfg.color, r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -196,30 +223,36 @@ export default function PlayerPage() {
 
           <div className="card" style={{ overflow: "hidden" }}>
             {(!player.matchHistory || player.matchHistory.length === 0) ? (
-              <div style={{ padding: 40, textAlign: "center", color: "#7A7A8C", fontSize: 14 }}>No match history yet</div>
+              <div style={{ padding: 40, textAlign: "center", color: "#7A7A8C" }}>No match history yet</div>
             ) : (
               <div style={{ overflowX: "auto" }}>
                 <table className="data-table" style={{ fontSize: 12 }}>
                   <thead>
                     <tr>
-                      {["Match", "Map", "Date", "Rating", "K", "D", "A", "ADR", "Result"].map((h) => (
+                      {["Match", "Map", "Score", "K", "D", "A", "HS%", "DMG", "Result"].map(h => (
                         <th key={h} style={{ padding: "9px 12px", color: "#7A7A8C", fontFamily: "'JetBrains Mono'", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.07em", borderBottom: "1px solid #1E1E22", whiteSpace: "nowrap" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {player.matchHistory.map((m) => (
+                    {player.matchHistory.map(m => (
                       <tr key={m._id}>
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", maxWidth: 140 }}>
                           <div style={{ fontSize: 12, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.title}</div>
+                          <div style={{ fontSize: 10, color: "#7A7A8C", marginTop: 1 }}>{timeAgo(m.date)}</div>
                         </td>
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{m.map || "—"}</td>
-                        <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", whiteSpace: "nowrap" }}>{timeAgo(m.date)}</td>
-                        <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}><RatingDisplay rating={m.rating} size="sm" /></td>
+                        <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                            <ScoreDisplay score={m.score} size="sm" />
+                            <ScoreBar score={m.score} height={3} />
+                          </div>
+                        </td>
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", color: "#4ECDC4" }}>{m.kills}</td>
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", color: "#FF4655" }}>{m.deaths}</td>
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'" }}>{m.assists}</td>
-                        <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'" }}>{m.adr}</td>
+                        <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'" }}>{m.hsp?.toFixed(0)}%</td>
+                        <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'" }}>{m.damage}</td>
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
                           <span style={{ padding: "2px 7px", borderRadius: 4, fontSize: 10, fontFamily: "'JetBrains Mono'", background: m.won ? "rgba(78,205,196,0.1)" : "rgba(255,70,85,0.1)", color: m.won ? "#4ECDC4" : "#FF4655", border: `1px solid ${m.won ? "rgba(78,205,196,0.25)" : "rgba(255,70,85,0.25)"}` }}>
                             {m.won ? "W" : "L"}
@@ -237,13 +270,9 @@ export default function PlayerPage() {
 
       <style>{`
         .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-        .stats-row { grid-template-columns: repeat(5, 1fr) !important; }
-        @media (max-width: 640px) {
+        .stats-row { grid-template-columns: repeat(4, 1fr) !important; }
+        @media (max-width: 600px) {
           .overview-grid { grid-template-columns: 1fr; }
-          .stats-row { grid-template-columns: repeat(5, 1fr) !important; }
-        }
-        @media (max-width: 400px) {
-          .stats-row { grid-template-columns: repeat(5, 1fr) !important; }
         }
       `}</style>
     </div>

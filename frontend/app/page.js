@@ -2,22 +2,18 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { getPlayers } from "@/lib/api";
-import { TIER_CONFIG, ROLE_CONFIG } from "@/lib/utils";
-import { TierBadge, RoleBadge, PlayerAvatar, RatingDisplay, RankNum, EmptyState, FilterBtn, Skeleton } from "@/components/UI";
+import { RANK_CONFIG, RANK_ORDER, getScoreColor } from "@/lib/utils";
+import { RankBadge, ScoreDisplay, ScoreBar, PlayerAvatar, RankNum, EmptyState, FilterBtn, Skeleton } from "@/components/UI";
 import toast from "react-hot-toast";
 
-const TIERS = ["All", "Elite", "Strong", "Solid", "Average", "Developing"];
-const ROLES = ["All", "Entry Fragger", "AWPer", "Support", "Lurker", "IGL"];
-
 export default function LeaderboardPage() {
-  const [players, setPlayers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [tierFilter, setTierFilter] = useState("All");
-  const [roleFilter, setRoleFilter] = useState("All");
-  const [sortField, setSortField] = useState("rating");
-  const [sortOrder, setSortOrder] = useState("desc");
-  const [search, setSearch] = useState("");
-  const [isMobile, setIsMobile] = useState(false);
+  const [players, setPlayers]       = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [rankFilter, setRankFilter] = useState("All");
+  const [sortField, setSortField]   = useState("score");
+  const [sortOrder, setSortOrder]   = useState("desc");
+  const [search, setSearch]         = useState("");
+  const [isMobile, setIsMobile]     = useState(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
@@ -30,8 +26,7 @@ export default function LeaderboardPage() {
     try {
       setLoading(true);
       const params = { sort: sortField, order: sortOrder };
-      if (tierFilter !== "All") params.tier = tierFilter;
-      if (roleFilter !== "All") params.role = roleFilter;
+      if (rankFilter !== "All") params.rank = rankFilter;
       const res = await getPlayers(params);
       setPlayers(res.data.data);
     } catch {
@@ -39,7 +34,7 @@ export default function LeaderboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [tierFilter, roleFilter, sortField, sortOrder]);
+  }, [rankFilter, sortField, sortOrder]);
 
   useEffect(() => { fetchPlayers(); }, [fetchPlayers]);
 
@@ -55,176 +50,123 @@ export default function LeaderboardPage() {
 
   const top3 = filtered.slice(0, 3);
 
+  const TD = ({ children, color }) => (
+    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 13, color: color || "#E8E8F0" }}>
+      {children}
+    </td>
+  );
+
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 16px" }}>
-      {/* Header */}
+    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 16px" }}>
+
+      {/* ── Header ── */}
       <div className="animate-slide stagger-1" style={{ marginBottom: 28 }}>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <h1 style={{ fontFamily: "'Bebas Neue', cursive", fontSize: "clamp(32px, 8vw, 64px)", letterSpacing: "0.04em", color: "#E8E8F0", lineHeight: 1 }}>
+            <h1 style={{ fontFamily: "'Bebas Neue', cursive", fontSize: "clamp(32px, 8vw, 60px)", letterSpacing: "0.04em", color: "#E8E8F0", lineHeight: 1 }}>
               LEADERBOARD
             </h1>
             <p style={{ color: "#7A7A8C", fontSize: 13, marginTop: 4 }}>
-              {players.length} players ranked by performance
+              {players.length} players · ranked by Performance Score
             </p>
           </div>
           <Link href="/add-match">
-            <button className="btn-primary" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, padding: "9px 16px" }}>
-              <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
+            <button className="btn-primary" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
               Add Match
             </button>
           </Link>
         </div>
       </div>
 
-      {/* Podium top 3 */}
+      {/* ── Score formula explainer ── */}
+      <div className="animate-slide stagger-1" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid #1E1E22", borderRadius: 8, padding: "12px 16px", marginBottom: 24, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", textTransform: "uppercase" }}>Score Formula</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          {[
+            { label: "Kill",   val: "+3 pts",    color: "#4ECDC4" },
+            { label: "Assist", val: "+1.5 pts",  color: "#A8DADC" },
+            { label: "Death",  val: "−2 pts",    color: "#FF4655" },
+            { label: "HS%",    val: "×0.3 pts",  color: "#FFD700" },
+            { label: "ADR",    val: "×0.15 pts", color: "#FF6B35" },
+          ].map(({ label, val, color }) => (
+            <div key={label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{label}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color, fontFamily: "'JetBrains Mono'" }}>{val}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {RANK_ORDER.map(r => (
+            <span key={r} style={{ fontSize: 11, color: RANK_CONFIG[r].color, fontFamily: "'JetBrains Mono'" }}>
+              {RANK_CONFIG[r].icon} {r}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Podium top 3 ── */}
       {!loading && top3.length >= 3 && (
         <div className="animate-slide stagger-2" style={{ marginBottom: 28 }}>
-
-          {/* Mobile: horizontal ranked list */}
           {isMobile ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {[top3[0], top3[1], top3[2]].map((p, i) => {
-                const cfg = TIER_CONFIG[p.tier] || TIER_CONFIG.D;
-                const medals = ["🥇", "🥈", "🥉"];
-                const rankColors = ["#FFD700", "#C0C0C0", "#CD7F32"];
+              {top3.map((p, i) => {
+                const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Rookie"];
                 return (
                   <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none" }}>
-                    <div
-                      className="card"
-                      style={{
-                        padding: "14px 16px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 14,
-                        position: "relative",
-                        overflow: "hidden",
-                        borderColor: i === 0 ? cfg.border : undefined,
-                      }}
-                    >
-                      {/* Left accent bar for #1 */}
-                      {i === 0 && (
-                        <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: cfg.color }} />
-                      )}
-
-                      {/* Medal */}
-                      <div style={{ fontSize: 26, flexShrink: 0, marginLeft: i === 0 ? 6 : 0 }}>
-                        {medals[i]}
-                      </div>
-
-                      {/* Avatar */}
-                      <PlayerAvatar name={p.name} size={42} tier={p.tier} />
-
-                      {/* Name + team */}
+                    <div className="card" style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, position: "relative", overflow: "hidden", borderColor: i === 0 ? cfg.border : undefined }}>
+                      {i === 0 && <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: cfg.color }} />}
+                      <div style={{ fontSize: 24, flexShrink: 0, marginLeft: i === 0 ? 4 : 0 }}>{["🥇","🥈","🥉"][i]}</div>
+                      <PlayerAvatar name={p.name} size={42} rank={p.rank} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, fontSize: 15, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {p.name}
-                        </div>
-                        <div style={{ fontSize: 12, color: "#7A7A8C", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {p.team || "—"}
-                        </div>
-                        <div style={{ display: "flex", gap: 6, marginTop: 5, alignItems: "center" }}>
-                          <TierBadge tier={p.tier} size="xs" />
-                          <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>
-                            {p.role}
-                          </span>
+                        <div style={{ fontWeight: 700, fontSize: 15, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
+                        <div style={{ fontSize: 11, color: "#7A7A8C", marginTop: 1 }}>{p.team || "—"}</div>
+                        <div style={{ display: "flex", gap: 8, marginTop: 5, alignItems: "center" }}>
+                          <RankBadge rank={p.rank} size="xs" />
+                          <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{p.kd} K/D</span>
+                          <span style={{ fontSize: 11, color: "#FFD700", fontFamily: "'JetBrains Mono'" }}>{p.hsp}% HS</span>
                         </div>
                       </div>
-
-                      {/* Right: rating + KD */}
                       <div style={{ textAlign: "right", flexShrink: 0 }}>
-                        <RatingDisplay rating={p.rating} size="md" />
-                        <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>
-                          RATING
-                        </div>
-                        <div style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", marginTop: 4 }}>
-                          {p.kd} <span style={{ color: "#3A3A42" }}>K/D</span>
-                        </div>
+                        <ScoreDisplay score={p.score} size="lg" />
+                        <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>SCORE</div>
                       </div>
                     </div>
                   </Link>
                 );
               })}
             </div>
-
           ) : (
-            /* Desktop: classic podium layout — 2nd | 1st | 3rd */
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1.1fr 1fr",
-              gap: 12,
-              alignItems: "end",
-            }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1.12fr 1fr", gap: 12, alignItems: "end" }}>
               {[top3[1], top3[0], top3[2]].map((p, i) => {
                 const actualRank = i === 1 ? 1 : i === 0 ? 2 : 3;
-                const cfg = TIER_CONFIG[p.tier] || TIER_CONFIG.D;
+                const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Rookie"];
                 const isFirst = actualRank === 1;
-                const heights = { 0: "auto", 1: "auto", 2: "auto" };
                 return (
                   <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none" }}>
-                    <div
-                      className="card"
-                      style={{
-                        padding: "24px 14px 20px",
-                        textAlign: "center",
-                        cursor: "pointer",
-                        transform: isFirst ? "translateY(-10px)" : "none",
-                        borderColor: isFirst ? cfg.border : undefined,
-                        position: "relative",
-                        overflow: "hidden",
-                        transition: "transform 0.2s ease, border-color 0.2s ease",
-                      }}
-                    >
-                      {/* Top accent line for #1 */}
-                      {isFirst && (
-                        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: cfg.color }} />
-                      )}
-
-                      {/* Medal */}
-                      <div style={{ fontSize: 28, marginBottom: 10 }}>
-                        {["🥇", "🥈", "🥉"][actualRank - 1]}
-                      </div>
-
-                      {/* Avatar */}
-                      <PlayerAvatar name={p.name} size={isFirst ? 52 : 44} tier={p.tier} />
-
-                      {/* Name */}
-                      <div style={{ marginTop: 10, fontWeight: 600, fontSize: isFirst ? 15 : 13, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {p.name}
-                      </div>
-
-                      {/* Team */}
-                      <div style={{ fontSize: 11, color: "#7A7A8C", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {p.team || "—"}
-                      </div>
-
-                      {/* Rating */}
+                    <div className="card" style={{ padding: "24px 14px 20px", textAlign: "center", cursor: "pointer", transform: isFirst ? "translateY(-10px)" : "none", borderColor: isFirst ? cfg.border : undefined, position: "relative", overflow: "hidden" }}>
+                      {isFirst && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: cfg.color }} />}
+                      <div style={{ fontSize: 28, marginBottom: 10 }}>{["🥇","🥈","🥉"][actualRank - 1]}</div>
+                      <PlayerAvatar name={p.name} size={isFirst ? 54 : 44} rank={p.rank} />
+                      <div style={{ marginTop: 10, fontWeight: 700, fontSize: isFirst ? 16 : 14, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
+                      <div style={{ fontSize: 11, color: "#7A7A8C", marginTop: 2 }}>{p.team || "—"}</div>
                       <div style={{ marginTop: 10 }}>
-                        <RatingDisplay rating={p.rating} size={isFirst ? "lg" : "md"} />
-                        <div style={{ fontSize: 9, color: "#7A7A8C", marginTop: 1, fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em" }}>
-                          RATING
-                        </div>
+                        <ScoreDisplay score={p.score} size={isFirst ? "xl" : "lg"} />
+                        <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>SCORE</div>
                       </div>
-
-                      {/* Badges */}
-                      <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
-                        <TierBadge tier={p.tier} size="xs" />
-                        <RoleBadge role={p.role} />
+                      <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}>
+                        <RankBadge rank={p.rank} size="sm" />
                       </div>
-
-                      {/* Extra stats for #1 on desktop */}
                       {isFirst && (
                         <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 12, paddingTop: 12, borderTop: "1px solid #1E1E22" }}>
                           {[
-                            { label: "K/D", val: p.kd },
-                            { label: "ADR", val: p.adr },
-                            { label: "HS%", val: `${p.hsr}%` },
-                          ].map(({ label, val }) => (
-                            <div key={label} style={{ textAlign: "center" }}>
-                              <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 13, color: "#E8E8F0" }}>{val}</div>
-                              <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>{label}</div>
+                            { l: "K/D",    v: p.kd },
+                            { l: "HS%",    v: `${p.hsp}%` },
+                            { l: "Win%",   v: `${p.winRate}%` },
+                          ].map(({ l, v }) => (
+                            <div key={l} style={{ textAlign: "center" }}>
+                              <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 13, color: "#E8E8F0" }}>{v}</div>
+                              <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>{l}</div>
                             </div>
                           ))}
                         </div>
@@ -238,151 +180,126 @@ export default function LeaderboardPage() {
         </div>
       )}
 
-      {/* Search */}
-      <div className="animate-slide stagger-3" style={{ marginBottom: 12 }}>
-        <input
-          className="input"
-          placeholder="🔍  Search player or team..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ maxWidth: "100%" }}
-        />
-      </div>
-
-      {/* Filters */}
-      <div className="animate-slide stagger-3" style={{ marginBottom: 20 }}>
+      {/* ── Filters ── */}
+      <div className="animate-slide stagger-3" style={{ marginBottom: 14 }}>
+        <input className="input" placeholder="🔍  Search player or team..." value={search} onChange={(e) => setSearch(e.target.value)} style={{ marginBottom: 10 }} />
         <div style={{ overflowX: "auto", paddingBottom: 4 }}>
-          <div style={{ display: "flex", gap: 4, minWidth: "max-content" }}>
-            <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", textTransform: "uppercase", alignSelf: "center", marginRight: 4 }}>Tier</span>
-            {Object.entries(TIER_CONFIG).map(([key, val]) => (
-              <FilterBtn key={key} color={val.color} label={key === "All" ? "All" : val.label} active={tierFilter === key} onClick={() => setTierFilter(key)} />
-            ))}
-            <div style={{ width: 1, background: "#1E1E22", margin: "0 6px" }} />
-            <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", textTransform: "uppercase", alignSelf: "center", marginRight: 4 }}>Role</span>
-            {ROLES.map((r) => (
-              <FilterBtn key={r} label={r === "All" ? "All" : (ROLE_CONFIG[r]?.icon ? `${ROLE_CONFIG[r].icon} ${r.split(" ")[0]}` : r)} active={roleFilter === r} onClick={() => setRoleFilter(r)} />
+          <div style={{ display: "flex", gap: 4, minWidth: "max-content", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em", marginRight: 4 }}>Rank</span>
+            <FilterBtn label="All" active={rankFilter === "All"} onClick={() => setRankFilter("All")} />
+            {RANK_ORDER.map(r => (
+              <FilterBtn key={r} label={`${RANK_CONFIG[r].icon} ${r}`} active={rankFilter === r} onClick={() => setRankFilter(r)} />
             ))}
           </div>
         </div>
       </div>
 
-      {/* Sort buttons (mobile) */}
-      {isMobile && (
-        <div style={{ marginBottom: 12, overflowX: "auto", paddingBottom: 4 }}>
-          <div style={{ display: "flex", gap: 4, minWidth: "max-content" }}>
-            <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", alignSelf: "center", marginRight: 4 }}>Sort</span>
-            {[{ f: "rating", l: "Rating" }, { f: "totalKills", l: "Kills" }, { f: "matchesPlayed", l: "Matches" }, { f: "wins", l: "Wins" }].map(({ f, l }) => (
-              <FilterBtn key={f} label={`${l}${sortField === f ? (sortOrder === "desc" ? " ↓" : " ↑") : ""}`} active={sortField === f} onClick={() => handleSort(f)} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Table / Cards */}
+      {/* ── Table / Cards ── */}
       <div className="card animate-slide stagger-4" style={{ overflow: "hidden" }}>
         {loading ? (
           <div style={{ padding: 20 }}>
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px 0", borderBottom: "1px solid #1E1E22" }}>
-                <Skeleton width={20} height={14} />
-                <Skeleton width={32} height={32} radius={6} />
-                <Skeleton width={100} height={14} />
-                <div style={{ marginLeft: "auto" }}><Skeleton width={50} height={14} /></div>
+                <Skeleton width={24} height={14} />
+                <Skeleton width={36} height={36} radius={8} />
+                <Skeleton width={110} height={14} />
+                <div style={{ marginLeft: "auto" }}><Skeleton width={60} height={14} /></div>
               </div>
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <EmptyState title="No players found" desc="Try adjusting your filters or add some players"
-            action={<Link href="/add-player"><button className="btn-primary">Add Player</button></Link>}
-          />
+          <EmptyState title="No players found" desc="Try adjusting filters or add players"
+            action={<Link href="/add-player"><button className="btn-primary">Add Player</button></Link>} />
         ) : isMobile ? (
-          /* Mobile card list */
+          /* ── Mobile card list ── */
           <div>
-            {filtered.map((player, idx) => (
-              <Link key={player._id} href={`/player/${player._id}`} style={{ textDecoration: "none", display: "block" }}>
-                <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(30,30,34,0.6)", display: "flex", alignItems: "center", gap: 12, transition: "background 0.15s" }}
-                  onTouchStart={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.02)"}
-                  onTouchEnd={(e) => e.currentTarget.style.background = "transparent"}>
-                  <div style={{ minWidth: 24, textAlign: "center" }}>
-                    <RankNum rank={idx + 1} />
-                  </div>
-                  <PlayerAvatar name={player.name} size={38} tier={player.tier} />
+            {filtered.map((p, idx) => (
+              <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none", display: "block" }}>
+                <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(30,30,34,0.6)", display: "flex", alignItems: "center", gap: 12 }}>
+                  <RankNum rank={idx + 1} />
+                  <PlayerAvatar name={p.name} size={38} rank={p.rank} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: 14, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{player.name}</div>
-                    <div style={{ fontSize: 11, color: "#7A7A8C", marginTop: 1, display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-                      <span>{player.team || "—"}</span>
-                      <TierBadge tier={player.tier} size="xs" />
+                    <div style={{ fontWeight: 600, fontSize: 14, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4, flexWrap: "wrap" }}>
+                      <RankBadge rank={p.rank} size="xs" />
+                      <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{p.kd} K/D</span>
+                      <span style={{ fontSize: 11, color: "#FFD700", fontFamily: "'JetBrains Mono'" }}>{p.hsp}% HS</span>
                     </div>
+                    <div style={{ marginTop: 5 }}><ScoreBar score={p.score} height={3} /></div>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
-                    <RatingDisplay rating={player.rating} size="sm" />
-                    <div style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", marginTop: 1 }}>
-                      {player.kd} K/D
-                    </div>
+                    <ScoreDisplay score={p.score} size="md" />
+                    <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", marginTop: 1 }}>SCORE</div>
                   </div>
-                  <div style={{ color: "#3A3A42", fontSize: 12, flexShrink: 0 }}>›</div>
+                  <span style={{ color: "#3A3A42", fontSize: 12 }}>›</span>
                 </div>
               </Link>
             ))}
           </div>
         ) : (
-          /* Desktop table */
+          /* ── Desktop table ──
+             Columns: # | Player | Score | Rank | K/D | Kills | Deaths | Assists | HS% | Matches | W/L | Win%
+             HS% = career average (totalHeadshots/totalKills)
+             Kills/Deaths/Assists = career totals
+          */
           <div style={{ overflowX: "auto" }}>
             <table className="data-table">
               <thead>
                 <tr>
                   {[
-                    { label: "#", field: null, w: 40 },
-                    { label: "Player", field: null },
-                    { label: "Rating", field: "rating" },
-                    { label: "Tier", field: null },
-                    { label: "Role", field: null },
-                    { label: "K/D", field: "kd" },
-                    { label: "KPR", field: null },
-                    { label: "APR", field: null },
-                    { label: "ADR", field: null },
-                    { label: "HS%", field: null },
-                    { label: "KAST", field: null },
-                    { label: "M", field: "matchesPlayed" },
-                    { label: "W/L", field: "wins" },
-                  ].map(({ label, field, w }) => (
+                    { label: "#",        field: null },
+                    { label: "Player",   field: null },
+                    { label: "Score",    field: "score" },
+                    { label: "Rank",     field: null },
+                    { label: "K/D",      field: null },
+                    { label: "Kills",    field: "totalKills" },
+                    { label: "Deaths",   field: null },
+                    { label: "Assists",  field: null },
+                    { label: "HS% avg",  field: null },
+                    { label: "Matches",  field: "matchesPlayed" },
+                    { label: "W / L",    field: "wins" },
+                    { label: "Win%",     field: null },
+                  ].map(({ label, field }) => (
                     <th key={label}
                       onClick={field ? () => handleSort(field) : undefined}
-                      style={{ padding: "10px 14px", color: field && sortField === field ? "#E8E8F0" : "#7A7A8C", fontFamily: "'JetBrains Mono'", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.07em", borderBottom: "1px solid #1E1E22", whiteSpace: "nowrap", cursor: field ? "pointer" : "default", width: w, userSelect: "none" }}>
+                      style={{ padding: "10px 14px", color: field && sortField === field ? "#E8E8F0" : "#7A7A8C", fontFamily: "'JetBrains Mono'", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.07em", borderBottom: "1px solid #1E1E22", whiteSpace: "nowrap", cursor: field ? "pointer" : "default", userSelect: "none" }}>
                       {label}{field && sortField === field ? (sortOrder === "desc" ? " ↓" : " ↑") : ""}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((player, idx) => (
-                  <tr key={player._id} style={{ cursor: "pointer", transition: "background 0.15s" }}
-                    onClick={() => window.location.href = `/player/${player._id}`}>
-                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}><RankNum rank={idx + 1} /></td>
+                {filtered.map((p, idx) => (
+                  <tr key={p._id} style={{ cursor: "pointer" }} onClick={() => window.location.href = `/player/${p._id}`}>
+                    <TD><RankNum rank={idx + 1} /></TD>
                     <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <PlayerAvatar name={player.name} size={32} tier={player.tier} />
+                        <PlayerAvatar name={p.name} size={32} rank={p.rank} />
                         <div>
-                          <div style={{ fontWeight: 500, fontSize: 13, color: "#E8E8F0" }}>{player.name}</div>
-                          <div style={{ fontSize: 11, color: "#7A7A8C" }}>{player.team}</div>
+                          <div style={{ fontWeight: 600, fontSize: 13, color: "#E8E8F0" }}>{p.name}</div>
+                          <div style={{ fontSize: 11, color: "#7A7A8C" }}>{p.team}</div>
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}><RatingDisplay rating={player.rating} size="sm" /></td>
-                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}><TierBadge tier={player.tier} /></td>
-                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}><RoleBadge role={player.role} /></td>
-                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 12 }}>{player.kd}</td>
-                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 12, color: "#A8DADC" }}>{player.kpr}</td>
-                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 12, color: "#4ECDC4" }}>{player.apr}</td>
-                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 12 }}>{player.adr}</td>
-                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 12 }}>{player.hsr}%</td>
-                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 12 }}>{player.avgKast}%</td>
-                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 12 }}>{player.matchesPlayed}</td>
-                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 12 }}>
-                      <span style={{ color: "#4ECDC4" }}>{player.wins}</span>
-                      <span style={{ color: "#3A3A42" }}>/</span>
-                      <span style={{ color: "#FF4655" }}>{player.losses}</span>
+                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 70 }}>
+                        <ScoreDisplay score={p.score} size="sm" />
+                        <ScoreBar score={p.score} height={3} />
+                      </div>
                     </td>
+                    <TD><RankBadge rank={p.rank} size="sm" /></TD>
+                    <TD color={getScoreColor(p.kd * 40)}>{p.kd}</TD>
+                    <TD color="#4ECDC4">{p.totalKills}</TD>
+                    <TD color="#FF4655">{p.totalDeaths}</TD>
+                    <TD>{p.totalAssists}</TD>
+                    <TD color="#FFD700">{p.hsp}%</TD>
+                    <TD>{p.matchesPlayed}</TD>
+                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 13 }}>
+                      <span style={{ color: "#4ECDC4" }}>{p.wins}</span>
+                      <span style={{ color: "#3A3A42" }}>/</span>
+                      <span style={{ color: "#FF4655" }}>{p.losses}</span>
+                    </td>
+                    <TD>{p.winRate}%</TD>
                   </tr>
                 ))}
               </tbody>
@@ -390,30 +307,6 @@ export default function LeaderboardPage() {
           </div>
         )}
       </div>
-
-      {/* Legend */}
-      <div className="animate-slide stagger-5" style={{ marginTop: 24, display: "flex", gap: 16, flexWrap: "wrap" }}>
-        <div style={{ fontSize: 11, color: "#7A7A8C" }}>
-          <span style={{ fontFamily: "'JetBrains Mono'", color: "#A8A8BC" }}>Tiers: </span>
-          {Object.entries(TIER_CONFIG).map(([key, val]) => (
-            <span key={key} style={{ color: val.color, marginRight: 8 }}>{val.label}</span>
-          ))}
-        </div>
-      </div>
-
-      <style>{`
-        .podium-grid {
-          display: grid;
-          grid-template-columns: 1fr 1.1fr 1fr;
-          gap: 12px;
-        }
-        @media (max-width: 400px) {
-          .podium-grid {
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-          }
-        }
-      `}</style>
     </div>
   );
 }

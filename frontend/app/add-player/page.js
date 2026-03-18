@@ -11,6 +11,7 @@ export default function AddPlayerPage() {
   const [form, setForm] = useState({
     name: "",
     team: "",
+    country: "",
   });
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
@@ -74,6 +75,23 @@ export default function AddPlayerPage() {
               value={form.team}
               onChange={(e) => set("team", e.target.value)}
             />
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontSize: 12, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>
+              Country
+            </label>
+            <select
+              className="input"
+              value={form.country}
+              onChange={(e) => set("country", e.target.value)}
+              style={{ cursor: "pointer" }}
+            >
+              <option value="">Select country</option>
+              {COUNTRIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
           </div>
 
           {/* Info box */}

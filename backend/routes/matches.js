@@ -3,87 +3,63 @@ const router = express.Router();
 const Match = require("../models/Match");
 const Player = require("../models/Player");
 
-// Helper: recompute and update a player's aggregated stats
+// Recompute a player's career stats + score after any match change
 async function recomputePlayerStats(playerId) {
+
   const matches = await Match.find({ "playerStats.player": playerId });
 
-  let totalRounds = 0,
-    totalKills = 0,
-    totalDeaths = 0,
-    totalAssists = 0,
-    totalHeadshots = 0,
-    totalDamage = 0,
-    totalKast = 0,
-    wins = 0,
-    matchesPlayed = matches.length;
+  let totalKills = 0, totalDeaths = 0, totalAssists = 0;
+  let totalHeadshots = 0, totalDamage = 0, totalRounds = 0;
+  let wins = 0, scoreSum = 0;
+  const matchesPlayed = matches.length;
 
   for (const match of matches) {
-    const stat = match.playerStats.find(
-      (s) => s.player.toString() === playerId.toString()
-    );
-    if (!stat) continue;
-    totalRounds += stat.rounds;
-    totalKills += stat.kills;
-    totalDeaths += stat.deaths;
-    totalAssists += stat.assists;
-    totalHeadshots += stat.headshots;
-    totalDamage += stat.damage;
-    totalKast += stat.kast;
-    if (stat.won) wins++;
+    const s = match.playerStats.find(s => s.player.toString() === playerId.toString());
+    if (!s) continue;
+
+    totalKills += s.kills;
+    totalDeaths += s.deaths;
+    totalAssists += s.assists;
+    totalHeadshots += s.headshots;
+    totalDamage += s.damage;
+    totalRounds += s.rounds;
+    if (s.won) wins++;
+
+    // Per-match score
+    const score = Player.computeScore({
+      kills: Number(s.kills) || 0,
+      deaths: Number(s.deaths) || 0,
+      assists: Number(s.assists) || 0,
+      headshots: Number(s.headshots) || 0,
+      damage: Number(s.damage) || 0,
+      kast: Number(s.kast) || 70,
+      rounds: Number(s.rounds) || 1,
+    });
+    scoreSum += score;
   }
 
-  const rating = Player.computeRating({
-    kills: totalKills,
-    deaths: totalDeaths,
-    assists: totalAssists,
-    headshots: totalHeadshots,
-    damage: totalDamage,
-    rounds: totalRounds,
-    kast: matchesPlayed > 0 ? totalKast / matchesPlayed : 0,
-  });
-
-  const tier = Player.computeTier(rating);
-  const role = Player.computeRole({
-    kills: totalKills,
-    assists: totalAssists,
-    headshots: totalHeadshots,
-    damage: totalDamage,
-    rounds: totalRounds,
-  });
+  const score = matchesPlayed > 0 ? +(scoreSum / matchesPlayed).toFixed(1) : 0;
+  const rank = Player.computeRank(score);
 
   await Player.findByIdAndUpdate(playerId, {
-    totalRounds,
-    totalKills,
-    totalDeaths,
-    totalAssists,
-    totalHeadshots,
-    totalDamage,
-    totalKast,
-    matchesPlayed,
-    wins,
-    losses: matchesPlayed - wins,
-    rating,
-    tier,
-    role,
+    totalKills, totalDeaths, totalAssists,
+    totalHeadshots, totalDamage, totalRounds,
+    matchesPlayed, wins, losses: matchesPlayed - wins,
+    score, rank,
   });
 }
 
 // GET all matches
 router.get("/", async (req, res) => {
   try {
-    const { limit = 20, page = 1 } = req.query;
+    const { limit = 30, page = 1 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
-
     const [matches, total] = await Promise.all([
-      Match.find()
-        .sort({ date: -1 })
-        .skip(skip)
-        .limit(Number(limit))
+      Match.find().sort({ date: -1 }).skip(skip).limit(Number(limit))
         .populate("playerStats.player", "name team"),
       Match.countDocuments(),
     ]);
-
-    res.json({ success: true, data: matches, total, page: Number(page) });
+    res.json({ success: true, data: matches, total });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -92,10 +68,8 @@ router.get("/", async (req, res) => {
 // GET single match
 router.get("/:id", async (req, res) => {
   try {
-    const match = await Match.findById(req.params.id).populate(
-      "playerStats.player",
-      "name team avatar country"
-    );
+    const match = await Match.findById(req.params.id)
+      .populate("playerStats.player", "name team avatar country");
     if (!match) return res.status(404).json({ success: false, error: "Match not found" });
     res.json({ success: true, data: match });
   } catch (err) {
@@ -103,52 +77,39 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// POST create match with player stats
+// POST create match
 router.post("/", async (req, res) => {
+
   try {
-    const { title, map, date, teamA, teamB, scoreA, scoreB, totalRounds, playerStats, notes } =
-      req.body;
+    const { title, map, date, teamA, teamB, scoreA, scoreB, totalRounds, playerStats, notes } = req.body;
 
-    if (!playerStats || playerStats.length === 0) {
-      return res.status(400).json({ success: false, error: "At least one player stat is required" });
-    }
+    if (!playerStats || playerStats.length === 0)
+      return res.status(400).json({ success: false, error: "At least one player stat required" });
 
-    // Compute per-match stats for each player entry
-    const enrichedStats = playerStats.map((s) => {
-      const rounds = totalRounds || s.rounds || 1;
-      const kpr = +(s.kills / rounds).toFixed(3);
-      const dpr = +(s.deaths / rounds).toFixed(3);
-      const apr = +(s.assists / rounds).toFixed(3);
-      const hsr = s.kills > 0 ? +((s.headshots / s.kills) * 100).toFixed(1) : 0;
-      const adr = +(s.damage / rounds).toFixed(1);
-      const rating = Player.computeRating({
-        kills: s.kills,
-        deaths: s.deaths,
-        assists: s.assists,
-        headshots: s.headshots,
-        damage: s.damage,
-        rounds,
-        kast: s.kast,
-      });
+    // Enrich each player stat with computed fields
+    const enriched = playerStats.map((s) => {
+      
+      const kills = Number(s.kills) || 0;
+      const deaths = Number(s.deaths) || 0;
+      const assists = Number(s.assists) || 0;
+      const headshots = Number(s.headshots) || 0;
+      const damage = Number(s.damage) || 0;
+      const kast = Number(s.kast) || 70;
+      const rounds = Number(totalRounds || s.rounds) || 1;
 
-      return { ...s, rounds, kpr, dpr, apr, hsr, adr, rating };
+      const hsp = kills > 0 ? +((headshots / kills) * 100).toFixed(1) : 0;
+      const adr = +(damage / rounds).toFixed(1);
+      const kd = deaths > 0 ? +(kills / deaths).toFixed(2) : +kills.toFixed(2);
+      const score = Player.computeScore({ kills, deaths, assists, headshots, damage, kast, rounds });
+
+      return { ...s, kills, deaths, assists, headshots, damage, kast, rounds, hsp, adr, kd, score };
+
     });
 
-    const match = await Match.create({
-      title,
-      map,
-      date,
-      teamA,
-      teamB,
-      scoreA,
-      scoreB,
-      totalRounds,
-      playerStats: enrichedStats,
-      notes,
-    });
+    const match = await Match.create({ title, map, date, teamA, teamB, scoreA, scoreB, totalRounds, playerStats: enriched, notes });
 
-    // Update all players' aggregate stats
-    const playerIds = [...new Set(playerStats.map((s) => s.player))];
+    // Update all players' career stats
+    const playerIds = [...new Set(playerStats.map(s => s.player))];
     await Promise.all(playerIds.map(recomputePlayerStats));
 
     const populated = await match.populate("playerStats.player", "name team avatar");
@@ -158,17 +119,15 @@ router.post("/", async (req, res) => {
   }
 });
 
-// DELETE match and recompute stats
+// DELETE match → recompute all affected players
 router.delete("/:id", async (req, res) => {
   try {
     const match = await Match.findById(req.params.id);
     if (!match) return res.status(404).json({ success: false, error: "Match not found" });
-
-    const playerIds = [...new Set(match.playerStats.map((s) => s.player.toString()))];
+    const playerIds = [...new Set(match.playerStats.map(s => s.player.toString()))];
     await Match.findByIdAndDelete(req.params.id);
     await Promise.all(playerIds.map(recomputePlayerStats));
-
-    res.json({ success: true, message: "Match deleted and stats updated" });
+    res.json({ success: true, message: "Match deleted and stats recalculated" });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

@@ -2,141 +2,105 @@ const mongoose = require("mongoose");
 
 const playerSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: [true, "Player name is required"],
-      trim: true,
-      unique: true,
-    },
-    avatar: {
-      type: String,
-      default: null,
-    },
-    country: {
-      type: String,
-      default: "Unknown",
-    },
-    // Aggregated career stats
-    totalRounds: { type: Number, default: 0 },
-    totalKills: { type: Number, default: 0 },
-    totalDeaths: { type: Number, default: 0 },
-    totalAssists: { type: Number, default: 0 },
+    name:    { type: String, required: true, trim: true, unique: true },
+    team:    { type: String, trim: true, default: "Unaffiliated" },
+    avatar:  { type: String, default: null },
+    country: { type: String, default: "" },
+
+    // Career totals
+    totalKills:     { type: Number, default: 0 },
+    totalDeaths:    { type: Number, default: 0 },
+    totalAssists:   { type: Number, default: 0 },
     totalHeadshots: { type: Number, default: 0 },
-    totalDamage: { type: Number, default: 0 },
-    totalKast: { type: Number, default: 0 }, // sum of KAST% per match
-    matchesPlayed: { type: Number, default: 0 },
-    wins: { type: Number, default: 0 },
-    losses: { type: Number, default: 0 },
-    // Computed rating (cached)
-    rating: { type: Number, default: 0 },
-    tier: { type: String, default: "Developing" },
-    role: { type: String, default: "Lurker" },
+    totalDamage:    { type: Number, default: 0 },
+    totalRounds:    { type: Number, default: 0 },
+    matchesPlayed:  { type: Number, default: 0 },
+    wins:           { type: Number, default: 0 },
+    losses:         { type: Number, default: 0 },
+
+    // Simple computed score (0-100) and rank label
+    score: { type: Number, default: 0 },
+    rank:  { type: String, default: "Rookie" },
   },
-  {
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-  }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
-// Virtuals
+// ─── Virtuals (simple, human-readable) ───────────────────────────────────────
 playerSchema.virtual("kd").get(function () {
-  return this.totalDeaths > 0
-    ? +(this.totalKills / this.totalDeaths).toFixed(2)
-    : this.totalKills;
+  const k = this.totalKills || 0;
+  const d = this.totalDeaths || 0;
+  return d > 0 ? +(k / d).toFixed(2) : +k.toFixed(2);
 });
 
-playerSchema.virtual("kpr").get(function () {
-  return this.totalRounds > 0
-    ? +(this.totalKills / this.totalRounds).toFixed(2)
-    : 0;
-});
-
-playerSchema.virtual("dpr").get(function () {
-  return this.totalRounds > 0
-    ? +(this.totalDeaths / this.totalRounds).toFixed(2)
-    : 0;
-});
-
-playerSchema.virtual("apr").get(function () {
-  return this.totalRounds > 0
-    ? +(this.totalAssists / this.totalRounds).toFixed(2)
-    : 0;
-});
-
-playerSchema.virtual("hsr").get(function () {
-  return this.totalKills > 0
-    ? +((this.totalHeadshots / this.totalKills) * 100).toFixed(1)
-    : 0;
+playerSchema.virtual("hsp").get(function () {
+  const k = this.totalKills || 0;
+  const h = this.totalHeadshots || 0;
+  return k > 0 ? +((h / k) * 100).toFixed(1) : 0;
 });
 
 playerSchema.virtual("adr").get(function () {
-  return this.totalRounds > 0
-    ? +(this.totalDamage / this.totalRounds).toFixed(1)
-    : 0;
-});
-
-playerSchema.virtual("avgKast").get(function () {
-  return this.matchesPlayed > 0
-    ? +(this.totalKast / this.matchesPlayed).toFixed(1)
-    : 0;
+  const r = this.totalRounds || 0;
+  return r > 0 ? +((this.totalDamage || 0) / r).toFixed(1) : 0;
 });
 
 playerSchema.virtual("winRate").get(function () {
-  return this.matchesPlayed > 0
-    ? +((this.wins / this.matchesPlayed) * 100).toFixed(1)
-    : 0;
+  const m = this.matchesPlayed || 0;
+  return m > 0 ? +(((this.wins || 0) / m) * 100).toFixed(0) : 0;
 });
 
-// Static method to compute rating
-playerSchema.statics.computeRating = function (stats) {
-  const { kills, deaths, assists, headshots, damage, rounds, kast } = stats;
+playerSchema.virtual("avgKills").get(function () {
+  const m = this.matchesPlayed || 0;
+  return m > 0 ? +((this.totalKills || 0) / m).toFixed(1) : 0;
+});
+
+playerSchema.virtual("avgDeaths").get(function () {
+  const m = this.matchesPlayed || 0;
+  return m > 0 ? +((this.totalDeaths || 0) / m).toFixed(1) : 0;
+});
+
+playerSchema.virtual("avgAssists").get(function () {
+  const m = this.matchesPlayed || 0;
+  return m > 0 ? +((this.totalAssists || 0) / m).toFixed(1) : 0;
+});
+
+playerSchema.virtual("avgDamage").get(function () {
+  const m = this.matchesPlayed || 0;
+  return m > 0 ? +((this.totalDamage || 0) / m).toFixed(0) : 0;
+});
+
+// ─── Score formula ────────────────────────────────────────────────────────────
+//
+//  Performance Score (per match, then averaged):
+//
+//    raw = (Kills × 3) + (Assists × 1.5) - (Deaths × 2) + (HS% × 0.3) + (ADR × 0.15)
+//
+//  Then clamped to 0–100.
+//
+//  Easy to explain:
+//    - Every kill  = +3 pts
+//    - Every assist = +1.5 pts
+//    - Every death  = -2 pts
+//    - HS% and damage give small bonus pts
+//
+
+playerSchema.statics.computeScore = function ({ kills=0, deaths=0, assists=0, headshots=0, damage=0, rounds=1 }) {
   if (!rounds || rounds === 0) return 0;
 
-  const kpr = kills / rounds;
-  const survivalRating = (rounds - deaths) / rounds;
-  const aprRating = assists / rounds / 0.3;
-  const hsrRating = kills > 0 ? (headshots / kills) / 0.45 : 0;
-  const adrRating = damage / rounds / 75;
-  const kastRating = kast / 100;
-
-  const killRating = kpr / 0.679;
-
-  const rating =
-    killRating * 0.38 +
-    survivalRating * 0.22 +
-    kastRating * 0.22 +
-    aprRating * 0.1 +
-    hsrRating * 0.04 +
-    adrRating * 0.04;
-
-  return +rating.toFixed(3);
-};
-
-// Static method to determine tier
-playerSchema.statics.computeTier = function (rating) {
-  if (rating >= 1.3) return "Elite"; 
-  if (rating >= 1.1) return "Strong";
-  if (rating >= 0.9) return "Solid";
-  if (rating >= 0.7) return "Average";
-  return "Developing";
-};
-
-// Static method to determine role
-playerSchema.statics.computeRole = function (stats) {
-  const { kills, assists, headshots, damage, rounds } = stats;
-  if (!rounds || rounds === 0) return "Lurker";
-
-  const kpr = kills / rounds;
-  const apr = assists / rounds;
-  const hsr = kills > 0 ? (headshots / kills) * 100 : 0;
+  const hsp = kills > 0 ? (headshots / kills) * 100 : 0;
   const adr = damage / rounds;
 
-  if (hsr > 55 && adr > 90) return "AWPer";
-  if (kpr > 0.82 && apr < 0.28) return "Entry Fragger";
-  if (apr > 0.45) return "Support";
-  if (adr > 82 && kpr < 0.68) return "IGL";
-  return "Lurker";
+  const raw = (kills * 3) + (assists * 1.5) - (deaths * 2) + (hsp * 0.3) + (adr * 0.15);
+
+  return +Math.min(100, Math.max(0, raw)).toFixed(1);
+};
+
+// ─── Rank label ───────────────────────────────────────────────────────────────
+playerSchema.statics.computeRank = function (score) {
+  if (score >= 80) return "Fragmaster";
+  if (score >= 65) return "Fragger";
+  if (score >= 50) return "Soldier";
+  if (score >= 35) return "Fighter";
+  return "Rookie";
 };
 
 module.exports = mongoose.model("Player", playerSchema);
