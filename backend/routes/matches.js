@@ -30,10 +30,10 @@ async function recomputePlayerStats(playerId) {
       kills: Number(s.kills) || 0,
       deaths: Number(s.deaths) || 0,
       assists: Number(s.assists) || 0,
-      headshots: Number(s.headshots) || 0,
+      hsp: Number(s.hsp) || 0,
       damage: Number(s.damage) || 0,
-      kast: Number(s.kast) || 70,
       rounds: Number(s.rounds) || 1,
+      won: Boolean(s.won),
     });
     scoreSum += score;
   }
@@ -81,28 +81,28 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
 
   try {
-    const { title, map, date, teamA, teamB, scoreA, scoreB, totalRounds, playerStats, notes } = req.body;
+    const { title, map, date, teamA, teamB, scoreA, scoreB, totalRounds, playerStats, notes , won } = req.body;
 
     if (!playerStats || playerStats.length === 0)
       return res.status(400).json({ success: false, error: "At least one player stat required" });
 
     // Enrich each player stat with computed fields
     const enriched = playerStats.map((s) => {
-      
+            
       const kills = Number(s.kills) || 0;
       const deaths = Number(s.deaths) || 0;
       const assists = Number(s.assists) || 0;
       const headshots = Number(s.headshots) || 0;
+      const hsp = Number(s.hsp) || 0;
       const damage = Number(s.damage) || 0;
       const kast = Number(s.kast) || 70;
       const rounds = Number(totalRounds || s.rounds) || 1;
 
-      const hsp = kills > 0 ? +((headshots / kills) * 100).toFixed(1) : 0;
       const adr = +(damage / rounds).toFixed(1);
       const kd = deaths > 0 ? +(kills / deaths).toFixed(2) : +kills.toFixed(2);
-      const score = Player.computeScore({ kills, deaths, assists, headshots, damage, kast, rounds });
+      const score = Player.computeScore({ kills, deaths, assists, hsp, damage, rounds , won });
 
-      return { ...s, kills, deaths, assists, headshots, damage, kast, rounds, hsp, adr, kd, score };
+      return { ...s, kills, deaths, assists, hsp , headshots, damage, kast, rounds, hsp, adr, kd, score };
 
     });
 

@@ -60,7 +60,7 @@ export default function PlayerPage() {
 
       {/* ── Profile header ── */}
       <div className="card animate-slide stagger-1" style={{ padding: "20px 16px", marginBottom: 16, position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: cfg.color }} />
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: cfg?.color }} />
  
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
@@ -144,7 +144,7 @@ export default function PlayerPage() {
               <RadarChart data={radarData}>
                 <PolarGrid stroke="#1E1E22" />
                 <PolarAngleAxis dataKey="stat" tick={{ fill: "#7A7A8C", fontSize: 11, fontFamily: "'JetBrains Mono'" }} />
-                <Radar dataKey="value" stroke={cfg.color} fill={cfg.color} fillOpacity={0.15} strokeWidth={2} />
+                <Radar dataKey="value" stroke={cfg?.color} fill={cfg?.color} fillOpacity={0.15} strokeWidth={2} />
               </RadarChart>
             </ResponsiveContainer>
           </div>
@@ -154,9 +154,9 @@ export default function PlayerPage() {
             <div className="card" style={{ padding: 20 }}>
               <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", color: "#7A7A8C", marginBottom: 14 }}>Rank</div>
               <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 16 }}>
-                <span style={{ fontSize: 32 }}>{cfg.icon}</span>
+                <span style={{ fontSize: 32 }}>{cfg?.icon}</span>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 18, color: cfg.color }}>{player.rank}</div>
+                  <div style={{ fontWeight: 700, fontSize: 18, color: cfg?.color }}>{player.rank}</div>
                   <div style={{ fontSize: 12, color: "#7A7A8C" }}>Score: {player.score} / 100</div>
                 </div>
               </div>
@@ -188,7 +188,8 @@ export default function PlayerPage() {
                 { icon: "❤️", text: `${player.totalDeaths} total deaths × 2`, pts: `-${(player.avgDeaths * 2).toFixed(1)}`, color: "#FF4655" },
                 { icon: "🎯", text: `${player.hsp}% headshot × 0.2`, pts: `+${(player.hsp * 0.2).toFixed(1)}`, color: "#FFD700" },
                 { icon: "🎯", text: `${((player.totalDamage / player.matchesPlayed )/ 100).toFixed(1)} damage × 0.5`, pts: `+${((player.totalDamage / player.matchesPlayed / 100) * 0.5).toFixed(1)}`, color: "#FFD700" },
-                { icon: "🎯", text: `${((player.totalKills / player.totalDeaths)).toFixed(1)} K/D ratio × 5`, pts: `+${((player.totalKills / player.totalDeaths) * 5).toFixed(1)}`, color: "#FFD700" }
+                { icon: "🎯", text: `${((player.totalKills / player.totalDeaths)).toFixed(1)} K/D ratio × 5`, pts: `+${((player.totalKills / player.totalDeaths) * 5).toFixed(1)}`, color: "#FFD700" },
+                { icon: "🎯", text: `${(player.wins).toFixed(1)} wins × 10`, pts: `+${(player.wins * 10).toFixed(1)}`, color: "#FFD700" }
               ].map(({ icon, text, pts, color }) => (
                 <div key={text} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: "1px solid #1E1E22" }}>
                   <div style={{ fontSize: 13, color: "#A8A8BC" }}>{icon} {text}</div>
@@ -216,7 +217,7 @@ export default function PlayerPage() {
                   <XAxis dataKey="match" tick={{ fill: "#7A7A8C", fontSize: 10, fontFamily: "'JetBrains Mono'" }} />
                   <YAxis domain={[0, 100]} tick={{ fill: "#7A7A8C", fontSize: 10, fontFamily: "'JetBrains Mono'" }} width={30} />
                   <Tooltip contentStyle={{ background: "#111113", border: "1px solid #1E1E22", borderRadius: 5, color: "#E8E8F0", fontFamily: "'JetBrains Mono'", fontSize: 11 }} />
-                  <Line type="monotone" dataKey="score" stroke={cfg.color} strokeWidth={2} dot={{ fill: cfg.color, r: 3 }} />
+                  <Line type="monotone" dataKey="score" stroke={cfg?.color} strokeWidth={2} dot={{ fill: cfg?.color, r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>

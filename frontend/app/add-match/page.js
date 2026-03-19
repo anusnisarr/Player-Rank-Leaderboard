@@ -126,6 +126,7 @@ export default function AddMatchPage() {
           deaths: Number(s.deaths),
           assists: Number(s.assists),
           headshots: getHeadshots(s),
+          hsp: Number(s.hsp),
           damage: Number(s.damage),
           kast: getKast(s),
           rounds,

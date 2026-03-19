@@ -83,15 +83,15 @@ playerSchema.virtual("avgDamage").get(function () {
 //    - HS% and damage give small bonus pts
 //
 
-playerSchema.statics.computeScore = function ({ kills=0, deaths=0, assists=0, headshots=0, damage=0, rounds=1 }) {
+playerSchema.statics.computeScore = function ({ kills=0, deaths=0, assists=0, headshots=0, hsp=0, damage=0, rounds=1, won=false }) {
   if (!rounds || rounds === 0) return 0;
 
   const kd = kills / deaths
-  const hsp = kills > 0 ? (headshots / kills) * 100 : 0;
   const adr = damage / rounds;
   const adr_normalized = adr / 100;
+  const winBonus = won ? 10 : 0;
 
-  const raw = (kills * 3) + (assists * 1.5) - (deaths * 2) + (hsp * 0.2) + (adr_normalized * 0.5) + (kd * 5);
+  const raw = (kills * 3) + (assists * 1.5) - (deaths * 2) + (hsp * 0.2) + (adr_normalized * 0.5) + (kd * 5) + winBonus;
 
   return Number(raw.toFixed(1));
 };

@@ -14,12 +14,12 @@ export function RankBadge({ rank, size = "sm" }) {
   return (
     <span style={{
       display: "inline-flex", alignItems: "center", gap: s.gap,
-      background: cfg.bg, border: `1px solid ${cfg.border}`,
-      borderRadius: 6, color: cfg.color, fontWeight: 600,
+      background: cfg?.bg, border: `1px solid ${cfg?.border}`,
+      borderRadius: 6, color: cfg?.color, fontWeight: 600,
       fontFamily: "'DM Sans', sans-serif", padding: s.padding, fontSize: s.fontSize,
       whiteSpace: "nowrap",
     }}>
-      <span>{cfg.icon}</span>
+      <span>{cfg?.icon}</span>
       <span>{rank}</span>
     </span>
   );
@@ -53,15 +53,16 @@ export function ScoreBar({ score, height = 4 }) {
 }
 
 // Player avatar — initials with rank color
-export function PlayerAvatar({ name, size = 36, rank }) {
+export function PlayerAvatar({ name, size = 36, rank="Not Ranked" }) {
   const cfg = RANK_CONFIG[rank] || RANK_CONFIG["Rookie"];
+  
   return (
     <div style={{
       width: size, height: size, borderRadius: size * 0.28,
-      background: cfg.bg, border: `1.5px solid ${cfg.border}`,
+      background: cfg?.bg, border: `1.5px solid ${cfg?.border}`,
       display: "flex", alignItems: "center", justifyContent: "center",
       fontFamily: "'JetBrains Mono', monospace",
-      fontSize: size * 0.34, fontWeight: 600, color: cfg.color, flexShrink: 0,
+      fontSize: size * 0.34, fontWeight: 600, color: cfg?.color, flexShrink: 0,
     }}>
       {getInitials(name || "??")}
     </div>
