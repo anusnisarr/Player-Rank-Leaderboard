@@ -81,7 +81,9 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
 
   try {
-    const { title, map, date, teamA, teamB, scoreA, scoreB, totalRounds, playerStats, notes , won } = req.body;
+    const { title, map, date, teamA, teamB, scoreA, scoreB, totalRounds, playerStats, notes } = req.body;
+
+    console.log(req.body)
 
     if (!playerStats || playerStats.length === 0)
       return res.status(400).json({ success: false, error: "At least one player stat required" });
@@ -97,6 +99,7 @@ router.post("/", async (req, res) => {
       const damage = Number(s.damage) || 0;
       const kast = Number(s.kast) || 70;
       const rounds = Number(totalRounds || s.rounds) || 1;
+      const won = Boolean(s.won);
 
       const adr = +(damage / rounds).toFixed(1);
       const kd = deaths > 0 ? +(kills / deaths).toFixed(2) : +kills.toFixed(2);

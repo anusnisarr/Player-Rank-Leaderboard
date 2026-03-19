@@ -5,7 +5,7 @@ export const RANK_CONFIG = {
   "Silver": { color: "#C0C0C0", bg: "rgba(192,192,192,0.12)", border: "rgba(192,192,192,0.35)", icon: "🥈", scoreRange : "30 - 49 score" },
   "Gold": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "🥇", scoreRange : "50 - 64 score" },
   "Platinum": { color: "#FF6B35", bg: "rgba(255,107,53,0.12)", border: "rgba(255,107,53,0.35)", icon: "🔥", scoreRange : "65 - 79 score" },
-  "Elite": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "💀",  scoreRange : "80+ score" },
+  "Elite": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "💀",  scoreRange : "80+ score " },
 };
 
 // export const RANK_ORDER = ["Fragmaster", "Fragger", "Soldier", "Fighter", "Rookie"];
