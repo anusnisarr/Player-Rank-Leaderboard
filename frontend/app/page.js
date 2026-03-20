@@ -78,6 +78,222 @@ export default function LeaderboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* ── Podium top 3 ── */}
+      {!loading && top3.length >= 3 && (
+        <div className="animate-slide stagger-2" style={{ marginBottom: 24 }}>
+          {isMobile ? (
+            // Mobile: vertical ranked list
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {top3.map((p, i) => {
+                const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Rookie"];
+                return (
+                  <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none" }}>
+                    <div className="card" style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, position: "relative", overflow: "hidden", borderColor: i === 0 ? cfg.border : undefined }}>
+                      {i === 0 && <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: cfg.color }} />}
+                      <div style={{ fontSize: 20, flexShrink: 0, marginLeft: i === 0 ? 4 : 0, minWidth: 26, textAlign: "center" }}>{["🥇","🥈","🥉"][i]}</div>
+                      <PlayerAvatar name={p.name} size={38} rank={p.rank} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
+                        <div style={{ fontSize: 11, color: "#7A7A8C" }}>{p.team || "—"}</div>
+                        <div style={{ display: "flex", gap: 6, marginTop: 4, alignItems: "center", flexWrap: "wrap" }}>
+                          <RankBadge rank={p.rank} size="xs" />
+                          <span style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{p.kd} K/D</span>
+                          <span style={{ fontSize: 10, color: "#FFD700", fontFamily: "'JetBrains Mono'" }}>{p.hsp}% HS</span>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <ScoreDisplay score={p.score} size="md" />
+                        <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>SCORE</div>
+                        <div style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", marginTop: 2 }}>{p.winRate}% WR</div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            // Desktop: classic podium 2nd | 1st | 3rd
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1.12fr 1fr", gap: 12, alignItems: "end" }}>
+              {[top3[1], top3[0], top3[2]].map((p, i) => {
+                const actualRank = i === 1 ? 1 : i === 0 ? 2 : 3;
+                const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Rookie"];
+                const isFirst = actualRank === 1;
+                return (
+                  <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none" }}>
+                    <div className="card" style={{ padding: "24px 14px 20px", textAlign: "center", cursor: "pointer", transform: isFirst ? "translateY(-10px)" : "none", borderColor: isFirst ? cfg.border : undefined, position: "relative", overflow: "hidden" }}>
+                      {isFirst && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: cfg.color }} />}
+                      <div style={{ fontSize: 28, marginBottom: 10 }}>{["🥇","🥈","🥉"][actualRank - 1]}</div>
+                      <PlayerAvatar name={p.name} size={isFirst ? 54 : 44} rank={p.rank} />
+                      <div style={{ marginTop: 10, fontWeight: 700, fontSize: isFirst ? 16 : 14, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
+                      <div style={{ fontSize: 11, color: "#7A7A8C", marginTop: 2 }}>{p.team || "—"}</div>
+                      <div style={{ marginTop: 10 }}>
+                        <ScoreDisplay score={p.score} size={isFirst ? "xl" : "lg"} />
+                        <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>SCORE</div>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}>
+                        <RankBadge rank={p.rank} size="sm" />
+                      </div>
+                      {isFirst && (
+                        <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 12, paddingTop: 12, borderTop: "1px solid #1E1E22" }}>
+                          {[{ l: "K/D", v: p.kd }, { l: "HS%", v: `${p.hsp}%` }, { l: "Win%", v: `${p.winRate}%` }].map(({ l, v }) => (
+                            <div key={l} style={{ textAlign: "center" }}>
+                              <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 13, color: "#E8E8F0" }}>{v}</div>
+                              <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>{l}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Filters ── */}
+      <div className="animate-slide stagger-3" style={{ marginBottom: 12 }}>
+        <input
+          className="input"
+          placeholder="🔍  Search player or team..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ marginBottom: 8, fontSize: 14 }}
+        />
+        <div style={{ overflowX: "auto", paddingBottom: 4 }}>
+          <div style={{ display: "flex", gap: 4, minWidth: "max-content", alignItems: "center" }}>
+            <span style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em", marginRight: 4 }}>Rank</span>
+            <FilterBtn label="All" active={rankFilter === "All"} onClick={() => setRankFilter("All")} />
+            {RANK_ORDER.map(r => (
+              <FilterBtn key={r} label={`${RANK_CONFIG[r]?.icon} ${r}`} active={rankFilter === r} onClick={() => setRankFilter(r)} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Player list / table ── */}
+      <div className="card animate-slide stagger-4" style={{marginBottom: 28 , overflow: "hidden" }}>
+        {loading ? (
+          <div style={{ padding: 16 }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px 0", borderBottom: "1px solid #1E1E22" }}>
+                <Skeleton width={24} height={14} />
+                <Skeleton width={36} height={36} radius={8} />
+                <Skeleton width={110} height={14} />
+                <div style={{ marginLeft: "auto" }}><Skeleton width={60} height={14} /></div>
+              </div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <EmptyState title="No players found" desc="Try adjusting filters or add players"
+            action={<Link href="/add-player"><button className="btn-primary">Add Player</button></Link>} />
+        ) : isMobile ? (
+          /* ── Mobile card rows ── */
+          <div>
+            {filtered.map((p, idx) => (
+              <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none", display: "block" }}>
+                <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", display: "flex", alignItems: "center", gap: 10 }}>
+                  <RankNum rank={idx + 1} />
+                  <PlayerAvatar name={p.name} size={36} rank={p.rank} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: 13, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
+                    <div style={{ fontSize: 11, color: "#7A7A8C", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.team || "—"}</div>
+                    <div style={{ display: "flex", gap: 6, marginTop: 3, alignItems: "center" }}>
+                      <RankBadge rank={p.rank} size="xs" />
+                      <span style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>
+                        <span style={{ color: "#4ECDC4" }}>{p.totalKills}K</span>
+                        {" / "}
+                        <span style={{ color: "#FF4655" }}>{p.totalDeaths}D</span>
+                        {" · "}
+                        <span style={{ color: "#FFD700" }}>{p.hsp}%HS</span>
+                      </span>
+                    </div>
+                    <div style={{ marginTop: 4 }}><ScoreBar score={p.score} height={2} /></div>
+                  </div>
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <ScoreDisplay score={p.score} size="md" />
+                    <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", marginTop: 1 }}>SCORE</div>
+                    <div style={{ fontSize: 10, fontFamily: "'JetBrains Mono'", marginTop: 2 }}>
+                      <span style={{ color: "#4ECDC4" }}>{p.wins}W</span>
+                      <span style={{ color: "#3A3A42" }}>/</span>
+                      <span style={{ color: "#FF4655" }}>{p.losses}L</span>
+                    </div>
+                  </div>
+                  <span style={{ color: "#3A3A42", fontSize: 12 }}>›</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          /* ── Desktop table ── */
+          <div style={{ overflowX: "auto" }}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  {[
+                    { label: "#",       field: null },
+                    { label: "Player",  field: null },
+                    { label: "Score",   field: "score" },
+                    { label: "Rank",    field: null },
+                    { label: "K/D",     field: null },
+                    { label: "Kills",   field: "totalKills" },
+                    { label: "Deaths",  field: null },
+                    { label: "Assists", field: null },
+                    { label: "HS% avg", field: null },
+                    { label: "Matches", field: "matchesPlayed" },
+                    { label: "W / L",   field: "wins" },
+                    { label: "Win%",    field: null },
+                  ].map(({ label, field }) => (
+                    <th key={label}
+                      onClick={field ? () => handleSort(field) : undefined}
+                      style={{ padding: "10px 14px", color: field && sortField === field ? "#E8E8F0" : "#7A7A8C", fontFamily: "'JetBrains Mono'", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.07em", borderBottom: "1px solid #1E1E22", whiteSpace: "nowrap", cursor: field ? "pointer" : "default", userSelect: "none" }}>
+                      {label}{field && sortField === field ? (sortOrder === "desc" ? " ↓" : " ↑") : ""}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((p, idx) => (
+                  <tr key={p._id} style={{ cursor: "pointer" }} onClick={() => window.location.href = `/player/${p._id}`}>
+                    <TD><RankNum rank={idx + 1} /></TD>
+                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <PlayerAvatar name={p.name} size={32} rank={p.rank} />
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: 13, color: "#E8E8F0" }}>{p.name}</div>
+                          <div style={{ fontSize: 11, color: "#7A7A8C" }}>{p.team}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 70 }}>
+                        <ScoreDisplay score={p.score} size="sm" />
+                        <ScoreBar score={p.score} height={3} />
+                      </div>
+                    </td>
+                    <TD><RankBadge rank={p.rank} size="sm" /></TD>
+                    <TD color={getScoreColor(p.kd * 40)}>{p.kd}</TD>
+                    <TD color="#4ECDC4">{p.totalKills}</TD>
+                    <TD color="#FF4655">{p.totalDeaths}</TD>
+                    <TD>{p.totalAssists}</TD>
+                    <TD color="#FFD700">{p.hsp}%</TD>
+                    <TD>{p.matchesPlayed}</TD>
+                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 13 }}>
+                      <span style={{ color: "#4ECDC4" }}>{p.wins}</span>
+                      <span style={{ color: "#3A3A42" }}>/</span>
+                      <span style={{ color: "#FF4655" }}>{p.losses}</span>
+                    </td>
+                    <TD>{p.winRate}%</TD>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
       {/* ── Score + Rank System Panel ── */}
       <div
         className="animate-slide stagger-1"
@@ -235,220 +451,6 @@ export default function LeaderboardPage() {
 
       </div>
 
-      {/* ── Podium top 3 ── */}
-      {!loading && top3.length >= 3 && (
-        <div className="animate-slide stagger-2" style={{ marginBottom: 24 }}>
-          {isMobile ? (
-            // Mobile: vertical ranked list
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {top3.map((p, i) => {
-                const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Rookie"];
-                return (
-                  <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none" }}>
-                    <div className="card" style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, position: "relative", overflow: "hidden", borderColor: i === 0 ? cfg.border : undefined }}>
-                      {i === 0 && <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: cfg.color }} />}
-                      <div style={{ fontSize: 20, flexShrink: 0, marginLeft: i === 0 ? 4 : 0, minWidth: 26, textAlign: "center" }}>{["🥇","🥈","🥉"][i]}</div>
-                      <PlayerAvatar name={p.name} size={38} rank={p.rank} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
-                        <div style={{ fontSize: 11, color: "#7A7A8C" }}>{p.team || "—"}</div>
-                        <div style={{ display: "flex", gap: 6, marginTop: 4, alignItems: "center", flexWrap: "wrap" }}>
-                          <RankBadge rank={p.rank} size="xs" />
-                          <span style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{p.kd} K/D</span>
-                          <span style={{ fontSize: 10, color: "#FFD700", fontFamily: "'JetBrains Mono'" }}>{p.hsp}% HS</span>
-                        </div>
-                      </div>
-                      <div style={{ textAlign: "right", flexShrink: 0 }}>
-                        <ScoreDisplay score={p.score} size="md" />
-                        <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>SCORE</div>
-                        <div style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", marginTop: 2 }}>{p.winRate}% WR</div>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          ) : (
-            // Desktop: classic podium 2nd | 1st | 3rd
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1.12fr 1fr", gap: 12, alignItems: "end" }}>
-              {[top3[1], top3[0], top3[2]].map((p, i) => {
-                const actualRank = i === 1 ? 1 : i === 0 ? 2 : 3;
-                const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Rookie"];
-                const isFirst = actualRank === 1;
-                return (
-                  <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none" }}>
-                    <div className="card" style={{ padding: "24px 14px 20px", textAlign: "center", cursor: "pointer", transform: isFirst ? "translateY(-10px)" : "none", borderColor: isFirst ? cfg.border : undefined, position: "relative", overflow: "hidden" }}>
-                      {isFirst && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: cfg.color }} />}
-                      <div style={{ fontSize: 28, marginBottom: 10 }}>{["🥇","🥈","🥉"][actualRank - 1]}</div>
-                      <PlayerAvatar name={p.name} size={isFirst ? 54 : 44} rank={p.rank} />
-                      <div style={{ marginTop: 10, fontWeight: 700, fontSize: isFirst ? 16 : 14, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
-                      <div style={{ fontSize: 11, color: "#7A7A8C", marginTop: 2 }}>{p.team || "—"}</div>
-                      <div style={{ marginTop: 10 }}>
-                        <ScoreDisplay score={p.score} size={isFirst ? "xl" : "lg"} />
-                        <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>SCORE</div>
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}>
-                        <RankBadge rank={p.rank} size="sm" />
-                      </div>
-                      {isFirst && (
-                        <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 12, paddingTop: 12, borderTop: "1px solid #1E1E22" }}>
-                          {[{ l: "K/D", v: p.kd }, { l: "HS%", v: `${p.hsp}%` }, { l: "Win%", v: `${p.winRate}%` }].map(({ l, v }) => (
-                            <div key={l} style={{ textAlign: "center" }}>
-                              <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 13, color: "#E8E8F0" }}>{v}</div>
-                              <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>{l}</div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Filters ── */}
-      <div className="animate-slide stagger-3" style={{ marginBottom: 12 }}>
-        <input
-          className="input"
-          placeholder="🔍  Search player or team..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ marginBottom: 8, fontSize: 14 }}
-        />
-        <div style={{ overflowX: "auto", paddingBottom: 4 }}>
-          <div style={{ display: "flex", gap: 4, minWidth: "max-content", alignItems: "center" }}>
-            <span style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em", marginRight: 4 }}>Rank</span>
-            <FilterBtn label="All" active={rankFilter === "All"} onClick={() => setRankFilter("All")} />
-            {RANK_ORDER.map(r => (
-              <FilterBtn key={r} label={`${RANK_CONFIG[r]?.icon} ${r}`} active={rankFilter === r} onClick={() => setRankFilter(r)} />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Player list / table ── */}
-      <div className="card animate-slide stagger-4" style={{ overflow: "hidden" }}>
-        {loading ? (
-          <div style={{ padding: 16 }}>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px 0", borderBottom: "1px solid #1E1E22" }}>
-                <Skeleton width={24} height={14} />
-                <Skeleton width={36} height={36} radius={8} />
-                <Skeleton width={110} height={14} />
-                <div style={{ marginLeft: "auto" }}><Skeleton width={60} height={14} /></div>
-              </div>
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          <EmptyState title="No players found" desc="Try adjusting filters or add players"
-            action={<Link href="/add-player"><button className="btn-primary">Add Player</button></Link>} />
-        ) : isMobile ? (
-          /* ── Mobile card rows ── */
-          <div>
-            {filtered.map((p, idx) => (
-              <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none", display: "block" }}>
-                <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", display: "flex", alignItems: "center", gap: 10 }}>
-                  <RankNum rank={idx + 1} />
-                  <PlayerAvatar name={p.name} size={36} rank={p.rank} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
-                    <div style={{ fontSize: 11, color: "#7A7A8C", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.team || "—"}</div>
-                    <div style={{ display: "flex", gap: 6, marginTop: 3, alignItems: "center" }}>
-                      <RankBadge rank={p.rank} size="xs" />
-                      <span style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>
-                        <span style={{ color: "#4ECDC4" }}>{p.totalKills}K</span>
-                        {" / "}
-                        <span style={{ color: "#FF4655" }}>{p.totalDeaths}D</span>
-                        {" · "}
-                        <span style={{ color: "#FFD700" }}>{p.hsp}%HS</span>
-                      </span>
-                    </div>
-                    <div style={{ marginTop: 4 }}><ScoreBar score={p.score} height={2} /></div>
-                  </div>
-                  <div style={{ textAlign: "right", flexShrink: 0 }}>
-                    <ScoreDisplay score={p.score} size="md" />
-                    <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", marginTop: 1 }}>SCORE</div>
-                    <div style={{ fontSize: 10, fontFamily: "'JetBrains Mono'", marginTop: 2 }}>
-                      <span style={{ color: "#4ECDC4" }}>{p.wins}W</span>
-                      <span style={{ color: "#3A3A42" }}>/</span>
-                      <span style={{ color: "#FF4655" }}>{p.losses}L</span>
-                    </div>
-                  </div>
-                  <span style={{ color: "#3A3A42", fontSize: 12 }}>›</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          /* ── Desktop table ── */
-          <div style={{ overflowX: "auto" }}>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  {[
-                    { label: "#",       field: null },
-                    { label: "Player",  field: null },
-                    { label: "Score",   field: "score" },
-                    { label: "Rank",    field: null },
-                    { label: "K/D",     field: null },
-                    { label: "Kills",   field: "totalKills" },
-                    { label: "Deaths",  field: null },
-                    { label: "Assists", field: null },
-                    { label: "HS% avg", field: null },
-                    { label: "Matches", field: "matchesPlayed" },
-                    { label: "W / L",   field: "wins" },
-                    { label: "Win%",    field: null },
-                  ].map(({ label, field }) => (
-                    <th key={label}
-                      onClick={field ? () => handleSort(field) : undefined}
-                      style={{ padding: "10px 14px", color: field && sortField === field ? "#E8E8F0" : "#7A7A8C", fontFamily: "'JetBrains Mono'", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.07em", borderBottom: "1px solid #1E1E22", whiteSpace: "nowrap", cursor: field ? "pointer" : "default", userSelect: "none" }}>
-                      {label}{field && sortField === field ? (sortOrder === "desc" ? " ↓" : " ↑") : ""}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((p, idx) => (
-                  <tr key={p._id} style={{ cursor: "pointer" }} onClick={() => window.location.href = `/player/${p._id}`}>
-                    <TD><RankNum rank={idx + 1} /></TD>
-                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <PlayerAvatar name={p.name} size={32} rank={p.rank} />
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: 13, color: "#E8E8F0" }}>{p.name}</div>
-                          <div style={{ fontSize: 11, color: "#7A7A8C" }}>{p.team}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 70 }}>
-                        <ScoreDisplay score={p.score} size="sm" />
-                        <ScoreBar score={p.score} height={3} />
-                      </div>
-                    </td>
-                    <TD><RankBadge rank={p.rank} size="sm" /></TD>
-                    <TD color={getScoreColor(p.kd * 40)}>{p.kd}</TD>
-                    <TD color="#4ECDC4">{p.totalKills}</TD>
-                    <TD color="#FF4655">{p.totalDeaths}</TD>
-                    <TD>{p.totalAssists}</TD>
-                    <TD color="#FFD700">{p.hsp}%</TD>
-                    <TD>{p.matchesPlayed}</TD>
-                    <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 13 }}>
-                      <span style={{ color: "#4ECDC4" }}>{p.wins}</span>
-                      <span style={{ color: "#3A3A42" }}>/</span>
-                      <span style={{ color: "#FF4655" }}>{p.losses}</span>
-                    </td>
-                    <TD>{p.winRate}%</TD>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
