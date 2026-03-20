@@ -7,13 +7,13 @@ import { RankBadge, ScoreDisplay, ScoreBar, PlayerAvatar, RankNum, EmptyState, F
 import toast from "react-hot-toast";
 
 export default function LeaderboardPage() {
-  const [players, setPlayers]       = useState([]);
-  const [loading, setLoading]       = useState(true);
+  const [players, setPlayers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [rankFilter, setRankFilter] = useState("All");
-  const [sortField, setSortField]   = useState("score");
-  const [sortOrder, setSortOrder]   = useState("desc");
-  const [search, setSearch]         = useState("");
-  const [isMobile, setIsMobile]     = useState(false);
+  const [sortField, setSortField] = useState("score");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [search, setSearch] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
@@ -78,59 +78,190 @@ export default function LeaderboardPage() {
           </Link>
         </div>
       </div>
+      {/* ── Score + Rank System Panel ── */}
+      <div
+        className="animate-slide stagger-1"
+        style={{
+          background: "rgba(255,255,255,0.02)",
+          border: "1px solid #1E1E22",
+          borderRadius: 8,
+          padding: "14px 18px",
+          marginBottom: 24,
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
 
-      {/* ── Score formula explainer ── */}
-      <div className="animate-slide stagger-1" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid #1E1E22", borderRadius: 8, padding: "12px 16px", marginBottom: 24, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
-        <div style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", textTransform: "uppercase" }}>Score Formula</div>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        {/* Header */}
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap"
+        }}>
+          <span style={{
+            fontSize: 11,
+            color: "#7A7A8C",
+            fontFamily: "'JetBrains Mono'",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase"
+          }}>
+            Score System
+          </span>
+
+          <span style={{
+            fontSize: 11,
+            color: "#4ECDC4",
+            fontFamily: "'JetBrains Mono'"
+          }}>
+            Avg of last 5 matches used for Rank
+          </span>
+        </div>
+
+        {/* Formula Section */}
+        <div style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 14,
+          alignItems: "center"
+        }}>
           {[
-            { label: "Kill",   val: "+3 pts",    color: "#4ECDC4" },
-            { label: "Assist", val: "+1.5 pts",  color: "#A8DADC" },
-            { label: "Death",  val: "−2 pts",    color: "#FF4655" },
-            { label: "Headshot%",    val: "×0.2 pts",  color: "#FFD700" },
-            { label: "Average Damage Round",   val: "×0.05 pts", color: "#FF6B35" },
-            { label: "Kill-Death Ratio",   val: "×5 pts", color: "#4ECDC4" },
+            { label: "Kill", val: "+3", color: "#4ECDC4" },
+            { label: "Assist", val: "+1.5", color: "#A8DADC" },
+            { label: "Death", val: "-2", color: "#FF4655" },
+            { label: "HS%", val: "×0.2", color: "#FFD700" },
+            { label: "ADR", val: "×0.05", color: "#FF6B35" },
+            { label: "K/D", val: "×5", color: "#4ECDC4" },
+            { label: "Win", val: "+10", color: "#22C55E" },
           ].map(({ label, val, color }) => (
-            <div key={label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{label}</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color, fontFamily: "'JetBrains Mono'" }}>{val}</span>
+            <div key={label} style={{
+              display: "flex",
+              gap: 6,
+              alignItems: "center"
+            }}>
+              <span style={{
+                fontSize: 11,
+                color: "#7A7A8C",
+                fontFamily: "'JetBrains Mono'"
+              }}>
+                {label}
+              </span>
+              <span style={{
+                fontSize: 12,
+                fontWeight: 600,
+                color,
+                fontFamily: "'JetBrains Mono'"
+              }}>
+                {val}
+              </span>
             </div>
           ))}
         </div>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {RANK_ORDER.map(r => (
-            <span key={r} style={{ fontSize: 11, color: RANK_CONFIG[r].color, fontFamily: "'JetBrains Mono'" }}>
-              {RANK_CONFIG[r].icon} {r}
-            </span>
-          ))}
+
+        {/* Divider */}
+        <div style={{
+          height: 1,
+          background: "#1E1E22",
+          margin: "4px 0"
+        }} />
+
+        {/* Rank Section */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+          gap: 10
+        }}>
+          {RANK_ORDER.map(rank => {
+            const r = RANK_CONFIG[rank];
+            return (
+              <div
+                key={rank}
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 6,
+                  border: `1px solid ${r?.border}`,
+                  background: r?.bg,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2
+                }}
+              >
+                <span style={{
+                  fontSize: 12,
+                  color: r?.color,
+                  fontWeight: 600,
+                  fontFamily: "'JetBrains Mono'"
+                }}>
+                  {r?.icon} {rank}
+                </span>
+
+                <span style={{
+                  fontSize: 10,
+                  color: "#9CA3AF",
+                  fontFamily: "'JetBrains Mono'"
+                }}>
+                  {r?.scoreRange}
+                </span>
+              </div>
+            );
+          })}
         </div>
+
+        {/* Footer Info */}
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 10,
+          marginTop: 4
+        }}>
+          <span style={{
+            fontSize: 10,
+            color: "#6B7280",
+            fontFamily: "'JetBrains Mono'"
+          }}>
+            Score is unbounded (can exceed 100)
+          </span>
+
+          <span style={{
+            fontSize: 10,
+            color: "#6B7280",
+            fontFamily: "'JetBrains Mono'"
+          }}>
+            Rank depends on consistency, not single match
+          </span>
+        </div>
+
       </div>
 
       {/* ── Podium top 3 ── */}
       {!loading && top3.length >= 3 && (
-        <div className="animate-slide stagger-2" style={{ marginBottom: 28 }}>
+        <div className="animate-slide stagger-2" style={{ marginBottom: 24 }}>
           {isMobile ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            // Mobile: vertical ranked list
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {top3.map((p, i) => {
                 const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Rookie"];
                 return (
                   <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none" }}>
-                    <div className="card" style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, position: "relative", overflow: "hidden", borderColor: i === 0 ? cfg.border : undefined }}>
+                    <div className="card" style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, position: "relative", overflow: "hidden", borderColor: i === 0 ? cfg.border : undefined }}>
                       {i === 0 && <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: cfg.color }} />}
-                      <div style={{ fontSize: 24, flexShrink: 0, marginLeft: i === 0 ? 4 : 0 }}>{["🥇","🥈","🥉"][i]}</div>
-                      <PlayerAvatar name={p.name} size={42} rank={p.rank} />
+                      <div style={{ fontSize: 20, flexShrink: 0, marginLeft: i === 0 ? 4 : 0, minWidth: 26, textAlign: "center" }}>{["🥇","🥈","🥉"][i]}</div>
+                      <PlayerAvatar name={p.name} size={38} rank={p.rank} />
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, fontSize: 15, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
-                        <div style={{ fontSize: 11, color: "#7A7A8C", marginTop: 1 }}>{p.team || "—"}</div>
-                        <div style={{ display: "flex", gap: 8, marginTop: 5, alignItems: "center" }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
+                        <div style={{ fontSize: 11, color: "#7A7A8C" }}>{p.team || "—"}</div>
+                        <div style={{ display: "flex", gap: 6, marginTop: 4, alignItems: "center", flexWrap: "wrap" }}>
                           <RankBadge rank={p.rank} size="xs" />
-                          <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{p.kd} K/D</span>
-                          <span style={{ fontSize: 11, color: "#FFD700", fontFamily: "'JetBrains Mono'" }}>{p.hsp}% HS</span>
+                          <span style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{p.kd} K/D</span>
+                          <span style={{ fontSize: 10, color: "#FFD700", fontFamily: "'JetBrains Mono'" }}>{p.hsp}% HS</span>
                         </div>
                       </div>
                       <div style={{ textAlign: "right", flexShrink: 0 }}>
-                        <ScoreDisplay score={p.score} size="lg" />
+                        <ScoreDisplay score={p.score} size="md" />
                         <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>SCORE</div>
+                        <div style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", marginTop: 2 }}>{p.winRate}% WR</div>
                       </div>
                     </div>
                   </Link>
@@ -138,6 +269,7 @@ export default function LeaderboardPage() {
               })}
             </div>
           ) : (
+            // Desktop: classic podium 2nd | 1st | 3rd
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1.12fr 1fr", gap: 12, alignItems: "end" }}>
               {[top3[1], top3[0], top3[2]].map((p, i) => {
                 const actualRank = i === 1 ? 1 : i === 0 ? 2 : 3;
@@ -160,11 +292,7 @@ export default function LeaderboardPage() {
                       </div>
                       {isFirst && (
                         <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 12, paddingTop: 12, borderTop: "1px solid #1E1E22" }}>
-                          {[
-                            { l: "K/D",    v: p.kd },
-                            { l: "HS%",    v: `${p.hsp}%` },
-                            { l: "Win%",   v: `${p.winRate}%` },
-                          ].map(({ l, v }) => (
+                          {[{ l: "K/D", v: p.kd }, { l: "HS%", v: `${p.hsp}%` }, { l: "Win%", v: `${p.winRate}%` }].map(({ l, v }) => (
                             <div key={l} style={{ textAlign: "center" }}>
                               <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 13, color: "#E8E8F0" }}>{v}</div>
                               <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>{l}</div>
@@ -182,23 +310,29 @@ export default function LeaderboardPage() {
       )}
 
       {/* ── Filters ── */}
-      <div className="animate-slide stagger-3" style={{ marginBottom: 14 }}>
-        <input className="input" placeholder="🔍  Search player or team..." value={search} onChange={(e) => setSearch(e.target.value)} style={{ marginBottom: 10 }} />
+      <div className="animate-slide stagger-3" style={{ marginBottom: 12 }}>
+        <input
+          className="input"
+          placeholder="🔍  Search player or team..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ marginBottom: 8, fontSize: 14 }}
+        />
         <div style={{ overflowX: "auto", paddingBottom: 4 }}>
           <div style={{ display: "flex", gap: 4, minWidth: "max-content", alignItems: "center" }}>
-            <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em", marginRight: 4 }}>Rank</span>
+            <span style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em", marginRight: 4 }}>Rank</span>
             <FilterBtn label="All" active={rankFilter === "All"} onClick={() => setRankFilter("All")} />
             {RANK_ORDER.map(r => (
-              <FilterBtn key={r} label={`${RANK_CONFIG[r].icon} ${r}`} active={rankFilter === r} onClick={() => setRankFilter(r)} />
+              <FilterBtn key={r} label={`${RANK_CONFIG[r]?.icon} ${r}`} active={rankFilter === r} onClick={() => setRankFilter(r)} />
             ))}
           </div>
         </div>
       </div>
 
-      {/* ── Table / Cards ── */}
+      {/* ── Player list / table ── */}
       <div className="card animate-slide stagger-4" style={{ overflow: "hidden" }}>
         {loading ? (
-          <div style={{ padding: 20 }}>
+          <div style={{ padding: 16 }}>
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px 0", borderBottom: "1px solid #1E1E22" }}>
                 <Skeleton width={24} height={14} />
@@ -212,25 +346,36 @@ export default function LeaderboardPage() {
           <EmptyState title="No players found" desc="Try adjusting filters or add players"
             action={<Link href="/add-player"><button className="btn-primary">Add Player</button></Link>} />
         ) : isMobile ? (
-          /* ── Mobile card list ── */
+          /* ── Mobile card rows ── */
           <div>
             {filtered.map((p, idx) => (
               <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none", display: "block" }}>
-                <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(30,30,34,0.6)", display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", display: "flex", alignItems: "center", gap: 10 }}>
                   <RankNum rank={idx + 1} />
-                  <PlayerAvatar name={p.name} size={38} rank={p.rank} />
+                  <PlayerAvatar name={p.name} size={36} rank={p.rank} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: 14, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 4, flexWrap: "wrap" }}>
+                    <div style={{ fontWeight: 600, fontSize: 13, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
+                    <div style={{ fontSize: 11, color: "#7A7A8C", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.team || "—"}</div>
+                    <div style={{ display: "flex", gap: 6, marginTop: 3, alignItems: "center" }}>
                       <RankBadge rank={p.rank} size="xs" />
-                      <span style={{ fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{p.kd} K/D</span>
-                      <span style={{ fontSize: 11, color: "#FFD700", fontFamily: "'JetBrains Mono'" }}>{p.hsp}% HS</span>
+                      <span style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>
+                        <span style={{ color: "#4ECDC4" }}>{p.totalKills}K</span>
+                        {" / "}
+                        <span style={{ color: "#FF4655" }}>{p.totalDeaths}D</span>
+                        {" · "}
+                        <span style={{ color: "#FFD700" }}>{p.hsp}%HS</span>
+                      </span>
                     </div>
-                    <div style={{ marginTop: 5 }}><ScoreBar score={p.score} height={3} /></div>
+                    <div style={{ marginTop: 4 }}><ScoreBar score={p.score} height={2} /></div>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
                     <ScoreDisplay score={p.score} size="md" />
                     <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", marginTop: 1 }}>SCORE</div>
+                    <div style={{ fontSize: 10, fontFamily: "'JetBrains Mono'", marginTop: 2 }}>
+                      <span style={{ color: "#4ECDC4" }}>{p.wins}W</span>
+                      <span style={{ color: "#3A3A42" }}>/</span>
+                      <span style={{ color: "#FF4655" }}>{p.losses}L</span>
+                    </div>
                   </div>
                   <span style={{ color: "#3A3A42", fontSize: 12 }}>›</span>
                 </div>
@@ -238,28 +383,24 @@ export default function LeaderboardPage() {
             ))}
           </div>
         ) : (
-          /* ── Desktop table ──
-             Columns: # | Player | Score | Rank | K/D | Kills | Deaths | Assists | HS% | Matches | W/L | Win%
-             HS% = career average (totalHeadshots/totalKills)
-             Kills/Deaths/Assists = career totals
-          */
+          /* ── Desktop table ── */
           <div style={{ overflowX: "auto" }}>
             <table className="data-table">
               <thead>
                 <tr>
                   {[
-                    { label: "#",        field: null },
-                    { label: "Player",   field: null },
-                    { label: "Score",    field: "score" },
-                    { label: "Rank",     field: null },
-                    { label: "K/D",      field: null },
-                    { label: "Kills",    field: "totalKills" },
-                    { label: "Deaths",   field: null },
-                    { label: "Assists",  field: null },
-                    { label: "HS% avg",  field: null },
-                    { label: "Matches",  field: "matchesPlayed" },
-                    { label: "W / L",    field: "wins" },
-                    { label: "Win%",     field: null },
+                    { label: "#",       field: null },
+                    { label: "Player",  field: null },
+                    { label: "Score",   field: "score" },
+                    { label: "Rank",    field: null },
+                    { label: "K/D",     field: null },
+                    { label: "Kills",   field: "totalKills" },
+                    { label: "Deaths",  field: null },
+                    { label: "Assists", field: null },
+                    { label: "HS% avg", field: null },
+                    { label: "Matches", field: "matchesPlayed" },
+                    { label: "W / L",   field: "wins" },
+                    { label: "Win%",    field: null },
                   ].map(({ label, field }) => (
                     <th key={label}
                       onClick={field ? () => handleSort(field) : undefined}

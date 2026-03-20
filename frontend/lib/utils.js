@@ -1,18 +1,15 @@
 // ─── Rank config — simple, friend-group friendly ─────────────────────────────
 export const RANK_CONFIG = {
-  "Recruit": { color: "#9E9E9E", bg: "rgba(158,158,158,0.12)", border: "rgba(158,158,158,0.35)", icon: "🌱", scoreRange : "0 - 14 score" },
-  "Bronze": { color: "#CD7F32", bg: "rgba(205,127,50,0.12)", border: "rgba(205,127,50,0.35)", icon: "🥉", scoreRange : "15 - 29 score" },
-  "Silver": { color: "#C0C0C0", bg: "rgba(192,192,192,0.12)", border: "rgba(192,192,192,0.35)", icon: "🥈", scoreRange : "30 - 49 score" },
-  "Gold": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "🥇", scoreRange : "50 - 64 score" },
-  "Platinum": { color: "#FF6B35", bg: "rgba(255,107,53,0.12)", border: "rgba(255,107,53,0.35)", icon: "🔥", scoreRange : "65 - 79 score" },
-  "Elite": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "💀",  scoreRange : "80+ score " },
+  "Bronze": { color: "#CD7F32", bg: "rgba(205,127,50,0.12)", border: "rgba(205,127,50,0.35)", icon: "🥉", scoreRange : "0 - 40 score" },
+  "Silver": { color: "#C0C0C0", bg: "rgba(192,192,192,0.12)", border: "rgba(192,192,192,0.35)", icon: "🥈", scoreRange : "41 - 80 score" },
+  "Gold": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "🥇", scoreRange : "81 - 130 score" },
+  "Platinum": { color: "#FF6B35", bg: "rgba(255,107,53,0.12)", border: "rgba(255,107,53,0.35)", icon: "🔥", scoreRange : "131 - 190 score" },
+  "Elite": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "💀",  scoreRange : "191 - 260 score" },
+  "Master": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "👑",  scoreRange : "261+ score " },
 };
 
 // export const RANK_ORDER = ["Fragmaster", "Fragger", "Soldier", "Fighter", "Rookie"];
-export const RANK_ORDER = ["Recruit", "Bronze", "Silver", "Gold", "Platinum", "Elite"];
-
-
-
+export const RANK_ORDER = ["Bronze", "Silver", "Gold", "Platinum", "Elite" , "Master"];
 
 export const MAPS = [
   "Mirage", "Dust 2", "Inferno", "Nuke", "Overpass",
@@ -28,10 +25,11 @@ export const COUNTRIES = [
 
 // Score → color
 export function getScoreColor(score) {
-  if (score >= 80) return "#FFD700";
-  if (score >= 65) return "#FF6B35";
-  if (score >= 50) return "#4ECDC4";
-  if (score >= 35) return "#A8DADC";
+  if (score >= 260) return "#FFD700";
+  if (score >= 190) return "#FF6B35";
+  if (score >= 130) return "#4ECDC4";
+  if (score >= 80) return "#A8DADC";
+  if (score >= 40) return "#C0C0C0";
   return "#6C757D";
 }
 

@@ -68,20 +68,6 @@ playerSchema.virtual("avgDamage").get(function () {
   return m > 0 ? +((this.totalDamage || 0) / m).toFixed(0) : 0;
 });
 
-// ─── Score formula ────────────────────────────────────────────────────────────
-//
-//  Performance Score (per match, then averaged):
-//
-//    raw = (Kills × 3) + (Assists × 1.5) - (Deaths × 2) + (HS% × 0.3) + (ADR × 0.15)
-//
-//  Then clamped to 0–100.
-//
-//  Easy to explain:
-//    - Every kill  = +3 pts
-//    - Every assist = +1.5 pts
-//    - Every death  = -2 pts
-//    - HS% and damage give small bonus pts
-//
 
 playerSchema.statics.computeScore = function ({ kills=0, deaths=0, assists=0, headshots=0, hsp=0, damage=0, rounds=1, won=false }) {
   if (!rounds || rounds === 0) return 0;
@@ -98,12 +84,12 @@ playerSchema.statics.computeScore = function ({ kills=0, deaths=0, assists=0, he
 
 // ─── Rank label ───────────────────────────────────────────────────────────────
 playerSchema.statics.computeRank = function (score) {
-  if (score <= 30) return "Recruit";
-  if (score <= 45) return "Bronze";
-  if (score <= 55) return "Silver";
-  if (score <= 65) return "Gold";
-  if (score <= 75) return "Platinum";
-  return "Elite";
+  if (score <= 40) return "Bronze";
+  if (score <= 80) return "Silver";
+  if (score <= 130) return "Gold";
+  if (score <= 190) return "Platinum";
+  if (score <= 260) return "Elite";
+  return "Master";
 };
 
 module.exports = mongoose.model("Player", playerSchema);
