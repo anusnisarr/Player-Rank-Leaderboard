@@ -41,10 +41,13 @@ export default function PlayerPage() {
   }));
 
   const handleDelete = async () => {
-    if (!confirm(`Delete ${player.name}?`)) return;
-    try { await deletePlayer(id); toast.success("Player deleted"); router.push("/"); }
-    catch { toast.error("Failed to delete"); }
+    alert("You are not authorized to delete!");
   };
+  // const handleDelete = async () => {
+  //   if (!confirm(`Delete ${player.name}?`)) return;
+  //   try { await deletePlayer(id); toast.success("Player deleted"); router.push("/"); }
+  //   catch { toast.error("Failed to delete"); }
+  // };
 
     // Stat cell helper
   const Stat = ({ label, value, color, sub }) => (
