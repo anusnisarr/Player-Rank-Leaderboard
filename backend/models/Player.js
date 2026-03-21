@@ -20,7 +20,7 @@ const playerSchema = new mongoose.Schema(
 
     // Simple computed score (0-100) and rank label
     score: { type: Number, default: 0 },
-    rank:  { type: String, default: "Rookie" },
+    rank:  { type: String, default: "Bronze" },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -84,11 +84,11 @@ playerSchema.statics.computeScore = function ({ kills=0, deaths=0, assists=0, he
 
 // ─── Rank label ───────────────────────────────────────────────────────────────
 playerSchema.statics.computeRank = function (score) {
-  if (score <= 40) return "Bronze";
-  if (score <= 80) return "Silver";
-  if (score <= 130) return "Gold";
-  if (score <= 190) return "Platinum";
-  if (score <= 260) return "Elite";
+  if (score <= 30) return "Bronze";
+  if (score <= 50) return "Silver";
+  if (score <= 70) return "Gold";
+  if (score <= 90) return "Platinum";
+  if (score <= 110) return "Elite";
   return "Master";
 };
 

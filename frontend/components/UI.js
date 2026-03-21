@@ -3,7 +3,7 @@ import { RANK_CONFIG, getScoreColor, getScoreBar, getInitials } from "@/lib/util
 
 // Rank badge — shows icon + label
 export function RankBadge({ rank, size = "sm" }) {
-  const cfg = RANK_CONFIG[rank] || RANK_CONFIG["Rookie"];
+  const cfg = RANK_CONFIG[rank] || RANK_CONFIG["Bronze"];
   const sizes = {
     xs: { fontSize: 10, padding: "1px 6px", gap: 3 },
     sm: { fontSize: 12, padding: "3px 9px", gap: 4 },
@@ -54,7 +54,7 @@ export function ScoreBar({ score, height = 4 }) {
 
 // Player avatar — initials with rank color
 export function PlayerAvatar({ name, size = 36, rank="Not Ranked" }) {
-  const cfg = RANK_CONFIG[rank] || RANK_CONFIG["Rookie"];
+  const cfg = RANK_CONFIG[rank] || RANK_CONFIG["Bronze"];
   
   return (
     <div style={{

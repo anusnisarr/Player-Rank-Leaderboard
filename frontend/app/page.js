@@ -86,7 +86,7 @@ export default function LeaderboardPage() {
             // Mobile: vertical ranked list
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {top3.map((p, i) => {
-                const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Rookie"];
+                const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Bronze"];
                 return (
                   <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none" }}>
                     <div className="card" style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, position: "relative", overflow: "hidden", borderColor: i === 0 ? cfg.border : undefined }}>
@@ -117,7 +117,7 @@ export default function LeaderboardPage() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1.12fr 1fr", gap: 12, alignItems: "end" }}>
               {[top3[1], top3[0], top3[2]].map((p, i) => {
                 const actualRank = i === 1 ? 1 : i === 0 ? 2 : 3;
-                const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Rookie"];
+                const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Bronze"];
                 const isFirst = actualRank === 1;
                 return (
                   <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none" }}>
@@ -242,6 +242,7 @@ export default function LeaderboardPage() {
                     { label: "Deaths",  field: null },
                     { label: "Assists", field: null },
                     { label: "HS% avg", field: null },
+                    { label: "Damage", field: null },
                     { label: "Matches", field: "matchesPlayed" },
                     { label: "W / L",   field: "wins" },
                     { label: "Win%",    field: null },
@@ -270,7 +271,7 @@ export default function LeaderboardPage() {
                     <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 70 }}>
                         <ScoreDisplay score={p.score} size="sm" />
-                        <ScoreBar score={p.score} height={3} />
+                        <ScoreBar score={p.score} height={3} /> 
                       </div>
                     </td>
                     <TD><RankBadge rank={p.rank} size="sm" /></TD>
@@ -279,6 +280,7 @@ export default function LeaderboardPage() {
                     <TD color="#FF4655">{p.totalDeaths}</TD>
                     <TD>{p.totalAssists}</TD>
                     <TD color="#FFD700">{p.hsp}%</TD>
+                    <TD color="#FFD700">{p.totalDamage}</TD>
                     <TD>{p.matchesPlayed}</TD>
                     <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 13 }}>
                       <span style={{ color: "#4ECDC4" }}>{p.wins}</span>

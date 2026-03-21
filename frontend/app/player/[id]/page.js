@@ -6,6 +6,7 @@ import { RANK_CONFIG, RANK_ORDER, getScoreColor, timeAgo } from "@/lib/utils";
 import { RankBadge, ScoreDisplay, ScoreBar, PlayerAvatar } from "@/components/UI";
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 
 export default function PlayerPage() {
   const { id } = useParams();
@@ -22,7 +23,7 @@ export default function PlayerPage() {
   if (loading) return <div style={{ maxWidth: 900, margin: "0 auto", padding: "80px 16px", textAlign: "center", color: "#7A7A8C" }}>Loading...</div>;
   if (!player)  return <div style={{ maxWidth: 900, margin: "0 auto", padding: "80px 16px", textAlign: "center", color: "#7A7A8C" }}>Player not found.</div>;
 
-  const cfg = RANK_CONFIG[player.rank] || RANK_CONFIG["Rookie"];
+  const cfg = RANK_CONFIG[player.rank] || RANK_CONFIG["Bronze"];
 
   // Radar: simple 0-100 normalized stats any friend can understand
   const radarData = [
@@ -40,9 +41,35 @@ export default function PlayerPage() {
     kills: m.kills,
   }));
 
-  const handleDelete = async () => {
-    alert("You are not authorized to delete!");
-  };
+ const handleDelete = async () => {
+  
+  const result = await Swal.fire({
+    title: "Enter PIN to Delete!",
+    input: "password",
+    inputPlaceholder: "Enter PIN",
+    showCancelButton: true,
+    confirmButtonText: "Delete",
+  });
+
+  if (!result.isConfirmed) return;
+
+  const enteredPin = result.value;
+  const correctPin = process.env.NEXT_PUBLIC_SECRET_DELETE_PIN;
+
+  if (enteredPin !== correctPin) {
+    toast.error("Invalid PIN");
+    return;
+  }
+
+  try {
+    await deletePlayer(id);
+    toast.success("Player deleted");
+    router.push("/");
+  } catch (err) {
+    toast.error("Failed to delete");
+  }
+};
+   
   // const handleDelete = async () => {
   //   if (!confirm(`Delete ${player.name}?`)) return;
   //   try { await deletePlayer(id); toast.success("Player deleted"); router.push("/"); }
@@ -50,6 +77,7 @@ export default function PlayerPage() {
   // };
 
     // Stat cell helper
+  
   const Stat = ({ label, value, color, sub }) => (
     <div style={{ background: "#111113", padding: "14px 10px", textAlign: "center" }}>
       <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 16, fontWeight: 600, color: color || "#E8E8F0" }}>{value ?? "—"}</div>

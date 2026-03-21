@@ -27,6 +27,8 @@ router.get("/", async (req, res) => {
       avgAssists: p.avgAssists, avgDamage: p.avgDamage,
       totalKills: p.totalKills, totalDeaths: p.totalDeaths,
       totalAssists: p.totalAssists, createdAt: p.createdAt,
+      totalHeadshots: p.totalHeadshots, totalDamage: p.totalDamage,
+      totalRounds: p.totalRounds,
     }));
 
     res.json({ success: true, data: out, count: out.length });
