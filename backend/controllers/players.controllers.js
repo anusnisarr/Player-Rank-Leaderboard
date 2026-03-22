@@ -1,10 +1,10 @@
-const express = require("express");
-const router = express.Router();
-const Player = require("../models/Player");
-const Match  = require("../models/Match");
+import Player from "../models/player.models.js";
+import Match  from "../models/match.models.js";
+import { recomputePlayerStats }  from "../utils/recomputePlayerStats.js"
+
 
 // GET all players — leaderboard
-router.get("/", async (req, res) => {
+export const getAllPlayers = async (req, res) => {
   try {
     const { sort = "score", order = "desc", rank, team } = req.query;
     const filter = {};
@@ -35,10 +35,23 @@ router.get("/", async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
-});
+};
+
+// GET all players Ids
+export const recomputeAllPlayersScores = async (req, res) => {
+  try {
+    const players = await Player.find();
+    await Promise.all(players.map(async (p) => { await recomputePlayerStats(p._id) }));
+
+    return res.json({ success: true, message: "All player scores recomputed" });    
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+
+};
 
 // GET single player + match history
-router.get("/:id", async (req, res) => {
+export const getSinglePlayer = async (req, res) => {
   try {
     const player = await Player.findById(req.params.id);
     if (!player) return res.status(404).json({ success: false, error: "Player not found" });
@@ -63,10 +76,10 @@ router.get("/:id", async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
-});
+};
 
 // POST create player
-router.post("/", async (req, res) => {
+export const createPlayer = async (req, res) => {
   try {
     const { name, team, country, avatar } = req.body;
     const player = await Player.create({ name, team, country, avatar });
@@ -75,10 +88,10 @@ router.post("/", async (req, res) => {
     if (err.code === 11000) return res.status(400).json({ success: false, error: "Player name already exists" });
     res.status(400).json({ success: false, error: err.message });
   }
-});
+};
 
 // PUT update player info
-router.put("/:id", async (req, res) => {
+export const updatePlayer = async (req, res) => {
   try {
     const { name, team, country, avatar } = req.body;
     const player = await Player.findByIdAndUpdate(req.params.id, { name, team, country, avatar }, { new: true, runValidators: true });
@@ -87,10 +100,10 @@ router.put("/:id", async (req, res) => {
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
-});
+};
 
 // DELETE player
-router.delete("/:id", async (req, res) => {
+export const deletePlayer = async (req, res) => {
   try {
     const player = await Player.findByIdAndDelete(req.params.id);
     if (!player) return res.status(404).json({ success: false, error: "Player not found" });
@@ -98,6 +111,4 @@ router.delete("/:id", async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
-});
-
-module.exports = router;
+};

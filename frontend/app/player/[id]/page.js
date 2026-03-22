@@ -18,6 +18,8 @@ export default function PlayerPage() {
   useEffect(() => {
     if (!id) return;
     getPlayer(id).then(r => setPlayer(r.data.data)).catch(() => toast.error("Player not found")).finally(() => setLoading(false));
+    
+    
   }, [id]);
 
   if (loading) return <div style={{ maxWidth: 900, margin: "0 auto", padding: "80px 16px", textAlign: "center", color: "#7A7A8C" }}>Loading...</div>;
@@ -113,9 +115,9 @@ export default function PlayerPage() {
             <div style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2 }}>
               Performance Score
             </div>
-            <div style={{ marginTop: 8, width: 130, marginLeft: "auto" }}>
+            {/* <div style={{ marginTop: 8, width: 130, marginLeft: "auto" }}>
               <ScoreBar score={player.score} height={5} />
-            </div>
+            </div> */}
             <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 13, marginTop: 8 }}>
               <span style={{ color: "#4ECDC4" }}>{player.wins}W</span>
               <span style={{ color: "#3A3A42", margin: "0 4px" }}>–</span>
@@ -128,11 +130,12 @@ export default function PlayerPage() {
         {/* ── Career Totals ── */}
         <div style={{ marginTop: 16 }}>
           <div style={{ fontSize: 10, color: "#3A3A42", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Career Totals</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 1, background: "#1E1E22", borderRadius: 7, overflow: "hidden" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 1, background: "#1E1E22", borderRadius: 7, overflow: "hidden" }}>
             <Stat label="Kills"   value={player.totalKills}   color="#4ECDC4" />
             <Stat label="Deaths"  value={player.totalDeaths}  color="#FF4655" />
             <Stat label="Assists" value={player.totalAssists} />
             <Stat label="HS%"     value={`${player.hsp}%`}   color="#FFD700" />
+            <Stat label="Headshots"     value={`${player.totalHeadshots}`}   color="#4ECDC4" />
             <Stat label="Matches" value={player.matchesPlayed} />
           </div>
         </div>
@@ -140,12 +143,13 @@ export default function PlayerPage() {
         {/* ── Per Match Averages ── */}
         <div style={{ marginTop: 10 }}>
           <div style={{ fontSize: 10, color: "#3A3A42", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Per Match Averages</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 1, background: "#1E1E22", borderRadius: 7, overflow: "hidden" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 1, background: "#1E1E22", borderRadius: 7, overflow: "hidden" }}>
             <Stat label="Avg Kills"   value={player.avgKills}   color="#4ECDC4" />
             <Stat label="Avg Deaths"  value={player.avgDeaths}  color="#FF4655" />
             <Stat label="Avg Assists" value={player.avgAssists} />
             <Stat label="Avg Damage"  value={player.avgDamage}  color="#FF6B35" />
             <Stat label="K/D"         value={player.kd}         color={getScoreColor((player.kd || 0) * 40)} />
+            <Stat label="Avg Score"         value={player.avgScore}         color={getScoreColor((player.avgScore || 0) * 40)} />
           </div>
         </div>
       </div>
@@ -188,11 +192,11 @@ export default function PlayerPage() {
                 <span style={{ fontSize: 32 }}>{cfg?.icon}</span>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 18, color: cfg?.color }}>{player.rank}</div>
-                  <div style={{ fontSize: 12, color: "#7A7A8C" }}>Score: {player.score} / 100</div>
+                  <div style={{ fontSize: 12, color: "#7A7A8C" }}>Avg Score: {player.avgScore} / 100</div>
                 </div>
               </div>
               <div style={{ marginBottom: 16 }}>
-                <ScoreBar score={player.score} height={6} />
+                <ScoreBar score={player.avgScore} height={6} />
               </div>
               {/* Rank ladder */}
               {RANK_ORDER.map(r => {
@@ -214,11 +218,11 @@ export default function PlayerPage() {
             <div className="card" style={{ padding: 20 }}>
               <div style={{ fontSize: 11, fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", color: "#7A7A8C", marginBottom: 14 }}>How Score Works</div>
               {[
-                { icon: "💚", text: `${player.totalKills} total kills × 3`, pts: `+${(player.avgKills * 3).toFixed(1)}`, color: "#4ECDC4" },
-                { icon: "💛", text: `${player.totalAssists} total assists × 1.5`, pts: `+${(player.avgAssists * 1.5).toFixed(1)}`, color: "#A8DADC" },
-                { icon: "❤️", text: `${player.totalDeaths} total deaths × 2`, pts: `-${(player.avgDeaths * 2).toFixed(1)}`, color: "#FF4655" },
-                { icon: "🎯", text: `${player.hsp}% headshot × 0.2`, pts: `+${(player.hsp * 0.2).toFixed(1)}`, color: "#FFD700" },
-                { icon: "🎯", text: `${((player.totalDamage / player.matchesPlayed )/ 100).toFixed(1)} damage × 0.5`, pts: `+${((player.totalDamage / player.matchesPlayed / 100) * 0.5).toFixed(1)}`, color: "#FFD700" },
+                { icon: "💚", text: `${player.totalKills} total kills × 3`, pts: `+${(player.totalKills * 3).toFixed(1)}`, color: "#4ECDC4" },
+                { icon: "💛", text: `${player.totalAssists} total assists × 1.5`, pts: `+${(player.totalAssists * 1.5).toFixed(1)}`, color: "#A8DADC" },
+                { icon: "❤️", text: `${player.totalDeaths} total deaths × 2`, pts: `-${(player.totalDeaths * 2).toFixed(1)}`, color: "#FF4655" },
+                { icon: "🎯", text: `${player.headshots}% headshot × 1`, pts: `+${(player.headshots * 1).toFixed(1)}`, color: "#FFD700" },
+                { icon: "🎯", text: `${((player.totalDamage / player.matchesPlayed )/ 100).toFixed(1)} damage × 0.5`, pts: `+${(((player.totalDamage / player.matchesPlayed) / 100) * 0.5).toFixed(1)}`, color: "#FFD700" },
                 { icon: "🎯", text: `${((player.totalKills / player.totalDeaths)).toFixed(1)} K/D ratio × 5`, pts: `+${((player.totalKills / player.totalDeaths) * 5).toFixed(1)}`, color: "#FFD700" },
                 { icon: "🎯", text: `${(player.wins).toFixed(1)} wins × 10`, pts: `+${(player.wins * 10).toFixed(1)}`, color: "#FFD700" }
               ].map(({ icon, text, pts, color }) => (

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const matchStatSchema = new mongoose.Schema({
   player:     { type: mongoose.Schema.Types.ObjectId, ref: "Player", required: true },
@@ -32,4 +32,4 @@ const matchSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Match", matchSchema);
+export default mongoose.model("Match", matchSchema);

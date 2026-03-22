@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const playerSchema = new mongoose.Schema(
   {
@@ -68,6 +68,12 @@ playerSchema.virtual("avgDamage").get(function () {
   return m > 0 ? +((this.totalDamage || 0) / m).toFixed(0) : 0;
 });
 
+playerSchema.virtual("avgScore").get(function () {
+  const mp = this.matchesPlayed || 0;
+  const s = this.score || 0;
+  return mp > 0 ? +(s / mp).toFixed(1) : 0;
+});
+
 
 playerSchema.statics.computeScore = function ({ kills=0, deaths=0, assists=0, headshots=0, hsp=0, damage=0, rounds=1, won=false }) {
   if (!rounds || rounds === 0) return 0;
@@ -77,19 +83,19 @@ playerSchema.statics.computeScore = function ({ kills=0, deaths=0, assists=0, he
   const adr_normalized = adr / 100;
   const winBonus = won ? 10 : 0;
 
-  const raw = (kills * 3) + (assists * 1.5) - (deaths * 2) + (hsp * 0.2) + (adr_normalized * 0.5) + (kd * 5) + winBonus;
+  const raw = (kills * 3) + (assists * 1.5) - (deaths * 2) + (headshots * 1) + (adr_normalized * 0.5) + (kd * 5) + winBonus;
 
   return Number(raw.toFixed(1));
 };
 
 // ─── Rank label ───────────────────────────────────────────────────────────────
 playerSchema.statics.computeRank = function (score) {
-  if (score <= 30) return "Bronze";
-  if (score <= 50) return "Silver";
+  if (score <= 40) return "Bronze";
+  if (score <= 55) return "Silver";
   if (score <= 70) return "Gold";
-  if (score <= 90) return "Platinum";
-  if (score <= 110) return "Elite";
+  if (score <= 85) return "Platinum";
+  if (score <= 100) return "Elite";
   return "Master";
 };
 
-module.exports = mongoose.model("Player", playerSchema);
+export default mongoose.model("Player", playerSchema);

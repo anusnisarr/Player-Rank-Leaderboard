@@ -1,6 +1,7 @@
 {
   "name": "cs2-ranking-backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "CS2 Player Ranking API",
   "main": "server.js",
   "scripts": {

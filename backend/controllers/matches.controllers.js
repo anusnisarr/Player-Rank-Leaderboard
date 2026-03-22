@@ -1,56 +1,10 @@
-const express = require("express");
-const router = express.Router();
-const Match = require("../models/Match");
-const Player = require("../models/Player");
-
-// Recompute a player's career stats + score after any match change
-async function recomputePlayerStats(playerId) {
-
-  const matches = await Match.find({ "playerStats.player": playerId });
-
-  let totalKills = 0, totalDeaths = 0, totalAssists = 0;
-  let totalHeadshots = 0, totalDamage = 0, totalRounds = 0;
-  let wins = 0, scoreSum = 0;
-  const matchesPlayed = matches.length;
-
-  for (const match of matches) {
-    const s = match.playerStats.find(s => s.player.toString() === playerId.toString());
-    if (!s) continue;
-
-    totalKills += s.kills;
-    totalDeaths += s.deaths;
-    totalAssists += s.assists;
-    totalHeadshots += s.headshots;
-    totalDamage += s.damage;
-    totalRounds += s.rounds;
-    if (s.won) wins++;
-
-    // Per-match score
-    const score = Player.computeScore({
-      kills: Number(s.kills) || 0,
-      deaths: Number(s.deaths) || 0,
-      assists: Number(s.assists) || 0,
-      hsp: Number(s.hsp) || 0,
-      damage: Number(s.damage) || 0,
-      rounds: Number(s.rounds) || 1,
-      won: Boolean(s.won),
-    });
-    scoreSum += score;
-  }
-
-  const score = matchesPlayed > 0 ? +(scoreSum / matchesPlayed).toFixed(1) : 0;
-  const rank = Player.computeRank(score);
-
-  await Player.findByIdAndUpdate(playerId, {
-    totalKills, totalDeaths, totalAssists,
-    totalHeadshots, totalDamage, totalRounds,
-    matchesPlayed, wins, losses: matchesPlayed - wins,
-    score, rank,
-  });
-}
+import express from "express"
+import Match from "../models/match.models.js";
+import Player from "../models/player.models.js";
+import { recomputePlayerStats } from "../utils/recomputePlayerStats.js";
 
 // GET all matches
-router.get("/", async (req, res) => {
+const getAllMatches = async (req, res) => {
   try {
     const { limit = 30, page = 1 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
@@ -63,10 +17,10 @@ router.get("/", async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
-});
+};
 
 // GET single match
-router.get("/:id", async (req, res) => {
+const getSingleMatch = async (req, res) => {
   try {
     const match = await Match.findById(req.params.id)
       .populate("playerStats.player", "name team avatar country");
@@ -75,15 +29,13 @@ router.get("/:id", async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
-});
+};
 
 // POST create match
-router.post("/", async (req, res) => {
+const createMatch = async (req, res) => {
 
   try {
     const { title, map, date, teamA, teamB, scoreA, scoreB, totalRounds, playerStats, notes } = req.body;
-
-    console.log(req.body)
 
     if (!playerStats || playerStats.length === 0)
       return res.status(400).json({ success: false, error: "At least one player stat required" });
@@ -105,7 +57,7 @@ router.post("/", async (req, res) => {
       const kd = deaths > 0 ? +(kills / deaths).toFixed(2) : +kills.toFixed(2);
       const score = Player.computeScore({ kills, deaths, assists, hsp, damage, rounds , won });
 
-      return { ...s, kills, deaths, assists, hsp , headshots, damage, kast, rounds, hsp, adr, kd, score };
+      return { ...s, kills, deaths, assists, headshots, damage, kast, rounds, adr, kd, score };
 
     });
 
@@ -120,10 +72,10 @@ router.post("/", async (req, res) => {
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
-});
+};
 
 // DELETE match → recompute all affected players
-router.delete("/:id", async (req, res) => {
+const deleteMatch = async (req, res) => {
   try {
     const match = await Match.findById(req.params.id);
     if (!match) return res.status(404).json({ success: false, error: "Match not found" });
@@ -134,6 +86,6 @@ router.delete("/:id", async (req, res) => {
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
-});
+};
 
-module.exports = router;
+export { getAllMatches, getSingleMatch, createMatch, deleteMatch };

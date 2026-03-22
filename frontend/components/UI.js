@@ -42,9 +42,11 @@ export function ScoreDisplay({ score, size = "md" }) {
 }
 
 // Score bar — visual 0-100 bar
-export function ScoreBar({ score, height = 4 }) {
+export function ScoreBar({score, height = 4 }) {
+  
   const color = getScoreColor(score);
   const pct = getScoreBar(score);
+  
   return (
     <div style={{ background: "#1E1E22", borderRadius: height, overflow: "hidden", height }}>
       <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: height, transition: "width 0.5s ease" }} />
