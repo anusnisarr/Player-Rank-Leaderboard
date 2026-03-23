@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 
 export default function MatchesPage() {
   const [matches, setMatches] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(null);
 
@@ -27,6 +28,23 @@ export default function MatchesPage() {
   //   try { await deleteMatch(id); toast.success("Match deleted"); fetchMatches(); }
   //   catch { toast.error("Failed to delete match"); }
   // };
+
+  const combineDateTime = (match) => {
+    const base = new Date(match.date);        // date only
+    const time = new Date(match.createdAt);   // full timestamp
+
+    base.setHours(
+      time.getHours(),
+      time.getMinutes(),
+      time.getSeconds(),
+      time.getMilliseconds()
+    );
+
+    return base;
+  }
+
+  const sortedMatches = matches.sort((a, b) => combineDateTime(b) - combineDateTime(a));
+
 
   return (
     <div style={{ maxWidth: 1000, margin: "0 auto", padding: "24px 16px" }}>
@@ -51,9 +69,9 @@ export default function MatchesPage() {
         </div>
       ) : (
         <div className="animate-slide stagger-2" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {matches.map((match) => {
+          {sortedMatches.map((match) => {
             const isExpanded = expanded === match._id;
-            const mvp = match.playerStats?.reduce((best, curr) => (!best || curr.rating > best.rating ? curr : best), null);
+            const mvp = match.playerStats?.reduce((best, curr) => (!best || curr.score > best.score ? curr : best), null);
 
             return (
               <div key={match._id} className="card" style={{ overflow: "hidden" }}>
@@ -103,13 +121,13 @@ export default function MatchesPage() {
                     <table className="data-table" style={{ fontSize: 12 }}>
                       <thead>
                         <tr>
-                          {["Player", "Rating", "K", "D", "A", "ADR", "Result"].map((h) => (
+                          {["Player", "Score", "K", "D", "A", "ADR", "Result"].map((h) => (
                             <th key={h} style={{ padding: "8px 12px", color: "#7A7A8C", fontFamily: "'JetBrains Mono'", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.07em", borderBottom: "1px solid #1E1E22", whiteSpace: "nowrap" }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
-                        {[...(match.playerStats || [])].sort((a, b) => b.rating - a.rating).map((s, i) => (
+                        {[...(match.playerStats || [])].sort((a, b) => b.score - a.score).map((s, i) => (
                           <tr key={i} style={{ background: i === 0 ? "rgba(255,215,0,0.03)" : undefined }}>
                             <td style={{ padding: "9px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
                               <div style={{ fontWeight: i === 0 ? 600 : 400, color: "#E8E8F0", display: "flex", alignItems: "center", gap: 5 }}>

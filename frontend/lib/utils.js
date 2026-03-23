@@ -1,10 +1,10 @@
 // ─── Rank config — simple, friend-group friendly ─────────────────────────────
 export const RANK_CONFIG = {
   "Bronze": { color: "#CD7F32", bg: "rgba(205,127,50,0.12)", border: "rgba(205,127,50,0.35)", icon: "🥉", scoreRange : "0 - 40 score" },
-  "Silver": { color: "#C0C0C0", bg: "rgba(192,192,192,0.12)", border: "rgba(192,192,192,0.35)", icon: "🥈", scoreRange : "41 - 55 score" },
-  "Gold": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "🥇", scoreRange : "56 - 70 score" },
-  "Platinum": { color: "#FF6B35", bg: "rgba(255,107,53,0.12)", border: "rgba(255,107,53,0.35)", icon: "🔥", scoreRange : "71 - 85 score" },
-  "Elite": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "💀",  scoreRange : "86 - 100 score" },
+  "Silver": { color: "#C0C0C0", bg: "rgba(192,192,192,0.12)", border: "rgba(192,192,192,0.35)", icon: "🥈", scoreRange : "40 - 55 score" },
+  "Gold": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "🥇", scoreRange : "55 - 70 score" },
+  "Platinum": { color: "#FF6B35", bg: "rgba(255,107,53,0.12)", border: "rgba(255,107,53,0.35)", icon: "🔥", scoreRange : "70 - 85 score" },
+  "Elite": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "💀",  scoreRange : "85 - 100 score" },
   "Master": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "👑",  scoreRange : "100+ score " },
 };
 
@@ -41,7 +41,7 @@ export function getScoreBar(score) {
 // Returns { current, next, min, max, progress }
 export function getRankProgress(score) {
   const order = ["Bronze", "Silver", "Gold", "Platinum", "Elite", "Master"];
-  const mins   = { Bronze: 0, Silver: 41, Gold: 56, Platinum: 71, Elite: 86, Master: 100 };
+  const mins   = { Bronze: 0, Silver: 40, Gold: 55, Platinum: 70, Elite: 85, Master: 100 };
 
   const currentRank = order.findLast(r => score >= mins[r]) || "Bronze";
   const currentIdx  = order.indexOf(currentRank);

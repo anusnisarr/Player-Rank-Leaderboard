@@ -20,6 +20,7 @@ const playerSchema = new mongoose.Schema(
 
     // Simple computed score (0-100) and rank label
     score: { type: Number, default: 0 },
+    avgScore: { type: Number, default: 0 },
     rank:  { type: String, default: "Bronze" },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
@@ -68,12 +69,6 @@ playerSchema.virtual("avgDamage").get(function () {
   return m > 0 ? +((this.totalDamage || 0) / m).toFixed(0) : 0;
 });
 
-playerSchema.virtual("avgScore").get(function () {
-  const mp = this.matchesPlayed || 0;
-  const s = this.score || 0;
-  return mp > 0 ? +(s / mp).toFixed(1) : 0;
-});
-
 
 playerSchema.statics.computeScore = function ({ kills=0, deaths=0, assists=0, headshots=0, hsp=0, damage=0, rounds=1, won=false }) {
   if (!rounds || rounds === 0) return 0;
@@ -84,7 +79,7 @@ playerSchema.statics.computeScore = function ({ kills=0, deaths=0, assists=0, he
 
   const raw = (kills * 3) + (assists * 1.5) - (deaths * 2) + (headshots * 1) + (damage_normalized * 0.5) + winBonus;
 
-  return Number(raw.toFixed(1));
+  return Math.max(0, Number(raw.toFixed(1)));
 };
 
 // ─── Rank label ───────────────────────────────────────────────────────────────
