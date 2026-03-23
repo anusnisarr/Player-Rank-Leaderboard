@@ -105,7 +105,7 @@ export default function LeaderboardPage() {
                         </div>
                       </div>
                       <div style={{ textAlign: "right", flexShrink: 0 }}>
-                        <ScoreDisplay score={p.score} size="md" />
+                        <ScoreDisplay score={p.avgScore} size="md" />
                         <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>SCORE</div>
                         <div style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", marginTop: 2 }}>{p.winRate}% WR</div>
                       </div>
@@ -130,7 +130,7 @@ export default function LeaderboardPage() {
                       <div style={{ marginTop: 10, fontWeight: 700, fontSize: isFirst ? 16 : 14, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
                       <div style={{ fontSize: 11, color: "#7A7A8C", marginTop: 2 }}>{p.team || "—"}</div>
                       <div style={{ marginTop: 10 }}>
-                        <ScoreDisplay score={p.score} size={isFirst ? "xl" : "lg"} />
+                        <ScoreDisplay score={p.avgScore} size={isFirst ? "xl" : "lg"} />
                         <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", marginTop: 1 }}>SCORE</div>
                       </div>
                       <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}>
@@ -215,7 +215,7 @@ export default function LeaderboardPage() {
                     <div style={{ marginTop: 4 }}><ScoreBar score={p.avgScore} height={2} /></div>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
-                    <ScoreDisplay score={p.score} size="md" />
+                    <ScoreDisplay score={p.avgScore} size="md" />
                     <div style={{ fontSize: 9, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", marginTop: 1 }}>SCORE</div>
                     <div style={{ fontSize: 10, fontFamily: "'JetBrains Mono'", marginTop: 2 }}>
                       <span style={{ color: "#4ECDC4" }}>{p.wins}W</span>
@@ -271,7 +271,7 @@ export default function LeaderboardPage() {
                     </td>
                     <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 70 }}>
-                        <ScoreDisplay score={p.score} size="md" />
+                        <ScoreDisplay score={p.avgScore} size="md" />
                       </div>
                     </td>
                     <TD><RankBadge rank={p.rank} size="sm" /></TD>
