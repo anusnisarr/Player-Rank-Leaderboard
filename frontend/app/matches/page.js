@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { getMatches, deleteMatch } from "@/lib/api";
 import { timeAgo } from "@/lib/utils";
-import { RatingDisplay } from "@/components/UI";
+import { ScoreDisplay } from "@/components/UI";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
@@ -118,7 +118,7 @@ export default function MatchesPage() {
                               </div>
                               {s.player?.team && <div style={{ fontSize: 10, color: "#7A7A8C" }}>{s.player.team}</div>}
                             </td>
-                            <td style={{ padding: "9px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}><RatingDisplay rating={s.rating} size="sm" /></td>
+                            <td style={{ padding: "9px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}><ScoreDisplay score={s.score} size="sm" /></td>
                             <td style={{ padding: "9px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", color: "#4ECDC4" }}>{s.kills}</td>
                             <td style={{ padding: "9px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", color: "#FF4655" }}>{s.deaths}</td>
                             <td style={{ padding: "9px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'" }}>{s.assists}</td>
