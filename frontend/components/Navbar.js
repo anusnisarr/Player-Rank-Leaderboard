@@ -8,6 +8,7 @@ const links = [
   { href: "/add-match", label: "Add Match", icon: "➕" },
   { href: "/add-player", label: "Add Player", icon: "👤" },
   { href: "/matches", label: "Match History", icon: "📋" },
+  { href: "/score-system", label: "Score System", icon: "📋" },
 ];
 
 export default function Navbar() {

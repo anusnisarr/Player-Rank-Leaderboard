@@ -8,7 +8,7 @@ export const RANK_CONFIG = {
   "Master": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "👑",  scoreRange : "100+ score " },
 };
 
-// export const RANK_ORDER = ["Fragmaster", "Fragger", "Soldier", "Fighter", "Rookie"];
+// export const RANK_ORDER = ["Fragmaster", "Fragger", "Soldier", "Fighter", "Bronze"];
 export const RANK_ORDER = ["Bronze", "Silver", "Gold", "Platinum", "Elite" , "Master"];
 
 export const MAPS = [
@@ -36,6 +36,24 @@ export function getScoreColor(score) {
 // Score bar width %
 export function getScoreBar(score) {  
   return Math.min(111, Math.max(0, score));
+}
+
+// Returns { current, next, min, max, progress }
+export function getRankProgress(score) {
+  const order = ["Bronze", "Silver", "Gold", "Platinum", "Elite", "Master"];
+  const mins   = { Bronze: 0, Silver: 41, Gold: 56, Platinum: 71, Elite: 86, Master: 100 };
+
+  const currentRank = order.findLast(r => score >= mins[r]) || "Bronze";
+  const currentIdx  = order.indexOf(currentRank);
+  const nextRank    = order[currentIdx + 1] || null;
+
+  const min      = mins[currentRank];
+  const max      = nextRank ? mins[nextRank] : 100;
+  const progress = nextRank
+    ? Math.min(100, ((score - min) / (max - min)) * 100)
+    : 100; // already at max rank
+
+  return { currentRank, nextRank, min, max, progress, score };
 }
 
 export function getInitials(name = "") {

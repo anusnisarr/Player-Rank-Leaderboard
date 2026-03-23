@@ -134,8 +134,8 @@ export default function PlayerPage() {
             <Stat label="Kills"   value={player.totalKills}   color="#4ECDC4" />
             <Stat label="Deaths"  value={player.totalDeaths}  color="#FF4655" />
             <Stat label="Assists" value={player.totalAssists} />
-            <Stat label="HS%"     value={`${player.hsp}%`}   color="#FFD700" />
             <Stat label="Headshots"     value={`${player.totalHeadshots}`}   color="#4ECDC4" />
+            <Stat label="Damage"  value={player.totalDamage}  color="#FF6B35" />
             <Stat label="Matches" value={player.matchesPlayed} />
           </div>
         </div>
@@ -147,7 +147,7 @@ export default function PlayerPage() {
             <Stat label="Avg Kills"   value={player.avgKills}   color="#4ECDC4" />
             <Stat label="Avg Deaths"  value={player.avgDeaths}  color="#FF4655" />
             <Stat label="Avg Assists" value={player.avgAssists} />
-            <Stat label="Avg Damage"  value={player.avgDamage}  color="#FF6B35" />
+            <Stat label="HS%"     value={`${player.hsp}%`}   color="#FFD700" />
             <Stat label="K/D"         value={player.kd}         color={getScoreColor((player.kd || 0) * 40)} />
             <Stat label="Avg Score"         value={player.avgScore}         color={getScoreColor((player.avgScore || 0) * 40)} />
           </div>
@@ -196,7 +196,7 @@ export default function PlayerPage() {
                 </div>
               </div>
               <div style={{ marginBottom: 16 }}>
-                <ScoreBar score={player.avgScore} height={6} />
+                <ScoreBar score={player.avgScore} height={6} showLabel />
               </div>
               {/* Rank ladder */}
               {RANK_ORDER.map(r => {
@@ -221,9 +221,8 @@ export default function PlayerPage() {
                 { icon: "💚", text: `${player.totalKills} total kills × 3`, pts: `+${(player.totalKills * 3).toFixed(1)}`, color: "#4ECDC4" },
                 { icon: "💛", text: `${player.totalAssists} total assists × 1.5`, pts: `+${(player.totalAssists * 1.5).toFixed(1)}`, color: "#A8DADC" },
                 { icon: "❤️", text: `${player.totalDeaths} total deaths × 2`, pts: `-${(player.totalDeaths * 2).toFixed(1)}`, color: "#FF4655" },
-                { icon: "🎯", text: `${player.headshots}% headshot × 1`, pts: `+${(player.headshots * 1).toFixed(1)}`, color: "#FFD700" },
-                { icon: "🎯", text: `${((player.totalDamage / player.matchesPlayed )/ 100).toFixed(1)} damage × 0.5`, pts: `+${(((player.totalDamage / player.matchesPlayed) / 100) * 0.5).toFixed(1)}`, color: "#FFD700" },
-                { icon: "🎯", text: `${((player.totalKills / player.totalDeaths)).toFixed(1)} K/D ratio × 5`, pts: `+${((player.totalKills / player.totalDeaths) * 5).toFixed(1)}`, color: "#FFD700" },
+                { icon: "🎯", text: `${player.totalHeadshots} headshot × 1`, pts: `+${(player.totalHeadshots * 1).toFixed(1)}`, color: "#FFD700" },
+                { icon: "🎯", text: `${(player.totalDamage / 100).toFixed(1)} damage × 0.5`, pts: `+${((player.totalDamage / 100) * 0.5).toFixed(1)}`, color: "#FFD700" },
                 { icon: "🎯", text: `${(player.wins).toFixed(1)} wins × 10`, pts: `+${(player.wins * 10).toFixed(1)}`, color: "#FFD700" }
               ].map(({ icon, text, pts, color }) => (
                 <div key={text} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: "1px solid #1E1E22" }}>

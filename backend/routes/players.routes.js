@@ -1,7 +1,6 @@
 import express from "express"
 import { getAllPlayers, recomputeAllPlayersScores, getSinglePlayer, createPlayer, updatePlayer, deletePlayer } from "../controllers/players.controllers.js";
 
-
 const router = express.Router();
 
 // GET all players — leaderboard
@@ -21,6 +20,5 @@ router.put("/:id", updatePlayer);
 
 // DELETE player
 router.delete("/:id", deletePlayer);
-
 
 export default router;

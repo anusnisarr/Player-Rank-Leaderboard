@@ -78,12 +78,11 @@ playerSchema.virtual("avgScore").get(function () {
 playerSchema.statics.computeScore = function ({ kills=0, deaths=0, assists=0, headshots=0, hsp=0, damage=0, rounds=1, won=false }) {
   if (!rounds || rounds === 0) return 0;
 
-  const kd = kills / deaths
-  const adr = damage / rounds;
-  const adr_normalized = adr / 100;
+  // const adr = damage / rounds;
+  const damage_normalized = damage / 100;
   const winBonus = won ? 10 : 0;
 
-  const raw = (kills * 3) + (assists * 1.5) - (deaths * 2) + (headshots * 1) + (adr_normalized * 0.5) + (kd * 5) + winBonus;
+  const raw = (kills * 3) + (assists * 1.5) - (deaths * 2) + (headshots * 1) + (damage_normalized * 0.5) + winBonus;
 
   return Number(raw.toFixed(1));
 };

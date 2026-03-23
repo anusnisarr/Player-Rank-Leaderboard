@@ -39,6 +39,8 @@ export default function LeaderboardPage() {
   useEffect(() => { fetchPlayers(); }, [fetchPlayers]);
 
   const handleSort = (field) => {
+    console.log(players);
+    
     if (sortField === field) setSortOrder(o => o === "desc" ? "asc" : "desc");
     else { setSortField(field); setSortOrder("desc"); }
   };
@@ -210,7 +212,7 @@ export default function LeaderboardPage() {
                         <span style={{ color: "#FFD700" }}>{p.hsp}%HS</span>
                       </span>
                     </div>
-                    <div style={{ marginTop: 4 }}><ScoreBar score={p.score} height={2} /></div>
+                    <div style={{ marginTop: 4 }}><ScoreBar score={p.avgScore} height={2} /></div>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
                     <ScoreDisplay score={p.score} size="md" />
@@ -237,11 +239,10 @@ export default function LeaderboardPage() {
                     { label: "Player",  field: null },
                     { label: "Score",   field: "score" },
                     { label: "Rank",    field: null },
-                    { label: "K/D",     field: null },
                     { label: "Kills",   field: "totalKills" },
                     { label: "Deaths",  field: null },
                     { label: "Assists", field: null },
-                    { label: "HS% avg", field: null },
+                    { label: "HS%", field: null },
                     { label: "Damage", field: null },
                     { label: "Matches", field: "matchesPlayed" },
                     { label: "W / L",   field: "wins" },
@@ -270,17 +271,15 @@ export default function LeaderboardPage() {
                     </td>
                     <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 70 }}>
-                        <ScoreDisplay score={p.score} size="sm" />
-                        <ScoreBar score={p.score} height={3} /> 
+                        <ScoreDisplay score={p.score} size="md" />
                       </div>
                     </td>
                     <TD><RankBadge rank={p.rank} size="sm" /></TD>
-                    <TD color={getScoreColor(p.kd * 40)}>{p.kd}</TD>
                     <TD color="#4ECDC4">{p.totalKills}</TD>
                     <TD color="#FF4655">{p.totalDeaths}</TD>
-                    <TD>{p.totalAssists}</TD>
+                    <TD color="#A8DADC" >{p.totalAssists}</TD>
                     <TD color="#FFD700">{p.hsp}%</TD>
-                    <TD color="#FFD700">{p.totalDamage}</TD>
+                    <TD color="#FF6B35">{p.totalDamage}</TD>
                     <TD>{p.matchesPlayed}</TD>
                     <td style={{ padding: "13px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 13 }}>
                       <span style={{ color: "#4ECDC4" }}>{p.wins}</span>
@@ -295,164 +294,6 @@ export default function LeaderboardPage() {
           </div>
         )}
       </div>
-
-      {/* ── Score + Rank System Panel ── */}
-      <div
-        className="animate-slide stagger-1"
-        style={{
-          background: "rgba(255,255,255,0.02)",
-          border: "1px solid #1E1E22",
-          borderRadius: 8,
-          padding: "14px 18px",
-          marginBottom: 24,
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-        }}
-      >
-
-        {/* Header */}
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap"
-        }}>
-          <span style={{
-            fontSize: 11,
-            color: "#7A7A8C",
-            fontFamily: "'JetBrains Mono'",
-            letterSpacing: "0.08em",
-            textTransform: "uppercase"
-          }}>
-            Score System
-          </span>
-
-          <span style={{
-            fontSize: 11,
-            color: "#4ECDC4",
-            fontFamily: "'JetBrains Mono'"
-          }}>
-            Avg of last 5 matches used for Rank
-          </span>
-        </div>
-
-        {/* Formula Section */}
-        <div style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 14,
-          alignItems: "center"
-        }}>
-          {[
-            { label: "Kill", val: "+3", color: "#4ECDC4" },
-            { label: "Assist", val: "+1.5", color: "#A8DADC" },
-            { label: "Death", val: "-2", color: "#FF4655" },
-            { label: "HS%", val: "×0.2", color: "#FFD700" },
-            { label: "ADR", val: "×0.05", color: "#FF6B35" },
-            { label: "K/D", val: "×5", color: "#4ECDC4" },
-            { label: "Win", val: "+10", color: "#22C55E" },
-          ].map(({ label, val, color }) => (
-            <div key={label} style={{
-              display: "flex",
-              gap: 6,
-              alignItems: "center"
-            }}>
-              <span style={{
-                fontSize: 11,
-                color: "#7A7A8C",
-                fontFamily: "'JetBrains Mono'"
-              }}>
-                {label}
-              </span>
-              <span style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color,
-                fontFamily: "'JetBrains Mono'"
-              }}>
-                {val}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Divider */}
-        <div style={{
-          height: 1,
-          background: "#1E1E22",
-          margin: "4px 0"
-        }} />
-
-        {/* Rank Section */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-          gap: 10
-        }}>
-          {RANK_ORDER.map(rank => {
-            const r = RANK_CONFIG[rank];
-            return (
-              <div
-                key={rank}
-                style={{
-                  padding: "8px 10px",
-                  borderRadius: 6,
-                  border: `1px solid ${r?.border}`,
-                  background: r?.bg,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 2
-                }}
-              >
-                <span style={{
-                  fontSize: 12,
-                  color: r?.color,
-                  fontWeight: 600,
-                  fontFamily: "'JetBrains Mono'"
-                }}>
-                  {r?.icon} {rank}
-                </span>
-
-                <span style={{
-                  fontSize: 10,
-                  color: "#9CA3AF",
-                  fontFamily: "'JetBrains Mono'"
-                }}>
-                  {r?.scoreRange}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Footer Info */}
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: 10,
-          marginTop: 4
-        }}>
-          <span style={{
-            fontSize: 10,
-            color: "#6B7280",
-            fontFamily: "'JetBrains Mono'"
-          }}>
-            Score is unbounded (can exceed 100)
-          </span>
-
-          <span style={{
-            fontSize: 10,
-            color: "#6B7280",
-            fontFamily: "'JetBrains Mono'"
-          }}>
-            Rank depends on consistency, not single match
-          </span>
-        </div>
-
-      </div>
-
     </div>
   );
 }

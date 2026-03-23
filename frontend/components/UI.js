@@ -1,5 +1,5 @@
 "use client";
-import { RANK_CONFIG, getScoreColor, getScoreBar, getInitials } from "@/lib/utils";
+import { RANK_CONFIG, getRankProgress, getScoreColor, getInitials } from "@/lib/utils";
 
 // Rank badge — shows icon + label
 export function RankBadge({ rank, size = "sm" }) {
@@ -41,15 +41,32 @@ export function ScoreDisplay({ score, size = "md" }) {
   );
 }
 
-// Score bar — visual 0-100 bar
-export function ScoreBar({score, height = 4 }) {
-  
-  const color = getScoreColor(score);
-  const pct = getScoreBar(score);
-  
+// 
+export function ScoreBar({ score, height = 4, showLabel = false }) {
+  const { currentRank, nextRank, max, progress } = getRankProgress(score);
+  const cfg = RANK_CONFIG[currentRank] || RANK_CONFIG["Bronze"];
+  const nextCfg = nextRank ? RANK_CONFIG[nextRank] : null;
+
   return (
-    <div style={{ background: "#1E1E22", borderRadius: height, overflow: "hidden", height }}>
-      <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: height, transition: "width 0.5s ease" }} />
+    <div>
+      <div style={{ background: "#1E1E22", borderRadius: height, overflow: "hidden", height, position: "relative" }}>
+        <div style={{ width: `${progress}%`, height: "100%", background: cfg.color, borderRadius: height, transition: "width 0.5s ease" }} />
+      </div>
+{showLabel && (
+  <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+    <span style={{ fontSize: 9, color: cfg.color, fontFamily: "'JetBrains Mono'", letterSpacing: "0.05em" }}>
+      {cfg.icon} {currentRank}
+    </span>
+    {nextRank ? (
+      <span style={{ fontSize: 9, color: "#A8A8BC", fontFamily: "'JetBrains Mono'" }}>
+        {Math.round(progress)}% →{" "}
+        <span style={{ color: nextCfg.color }}>{nextCfg.icon} {nextRank}</span>
+      </span>
+    ) : (
+      <span style={{ fontSize: 9, color: cfg.color, fontFamily: "'JetBrains Mono'" }}>MAX RANK 👑</span>
+    )}
+  </div>
+)}
     </div>
   );
 }

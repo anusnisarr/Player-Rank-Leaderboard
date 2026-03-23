@@ -24,7 +24,7 @@ export const recomputePlayerStats = async (playerId) => {
     if (s.won) wins++;
 
     // Per-match score
-    const score = Player.computeScore({
+    const score = await Player.computeScore({
       kills: Number(s.kills) || 0,
       deaths: Number(s.deaths) || 0,
       assists: Number(s.assists) || 0,
@@ -34,7 +34,14 @@ export const recomputePlayerStats = async (playerId) => {
       won: Boolean(s.won),
     });
     scoreSum += score;
+    
+    await Match.findOneAndUpdate(
+      { _id: match._id, "playerStats.player": playerId },
+      { "playerStats.$.score": score }
+    );
+
   }
+
 
   const avgScore = matchesPlayed > 0 ? +(scoreSum / matchesPlayed).toFixed(1) : 0;
   const rank = Player.computeRank(avgScore);

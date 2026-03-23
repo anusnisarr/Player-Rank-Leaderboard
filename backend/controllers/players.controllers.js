@@ -24,11 +24,11 @@ export const getAllPlayers = async (req, res) => {
       score: p.score, rank: p.rank,
       kd: p.kd, hsp: p.hsp, adr: p.adr, winRate: p.winRate,
       avgKills: p.avgKills, avgDeaths: p.avgDeaths,
-      avgAssists: p.avgAssists, avgDamage: p.avgDamage,
+      avgAssists: p.avgAssists, avgDamage: p.avgDamage, avgScore: p.avgScore,
       totalKills: p.totalKills, totalDeaths: p.totalDeaths,
-      totalAssists: p.totalAssists, createdAt: p.createdAt,
+      totalAssists: p.totalAssists, totalRounds: p.totalRounds,
       totalHeadshots: p.totalHeadshots, totalDamage: p.totalDamage,
-      totalRounds: p.totalRounds,
+      createdAt: p.createdAt
     }));
 
     res.json({ success: true, data: out, count: out.length });
