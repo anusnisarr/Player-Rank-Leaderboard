@@ -21,7 +21,7 @@ export const getAllPlayers = async (req, res) => {
       _id: p._id,
       name: p.name, team: p.team, country: p.country, avatar: p.avatar,
       matchesPlayed: p.matchesPlayed, wins: p.wins, losses: p.losses,
-      score: p.score,
+      score: p.score, rank: p.rank,
       kd: p.kd, hsp: p.hsp, adr: p.adr, winRate: p.winRate,
       avgKills: p.avgKills, avgDeaths: p.avgDeaths,
       avgAssists: p.avgAssists, avgDamage: p.avgDamage, avgScore: p.avgScore,
