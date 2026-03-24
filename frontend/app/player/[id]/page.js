@@ -132,31 +132,31 @@ export default function PlayerPage() {
           </div>
         </div>
  
-        {/* ── Career Totals ── */}
-        <div style={{ marginTop: 16 }}>
-          <div style={{ fontSize: 10, color: "#3A3A42", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Career Totals</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 1, background: "#1E1E22", borderRadius: 7, overflow: "hidden" }}>
-            <Stat label="Kills"   value={player.totalKills}   color="#4ECDC4" />
-            <Stat label="Deaths"  value={player.totalDeaths}  color="#FF4655" />
-            <Stat label="Assists" value={player.totalAssists} />
-            <Stat label="Headshots"     value={`${player.totalHeadshots}`}   color="#4ECDC4" />
-            <Stat label="Damage"  value={player.totalDamage}  color="#FF6B35" />
-            <Stat label="Matches" value={player.matchesPlayed} />
-          </div>
+      {/* ── Career Totals ── */}
+      <div style={{ marginTop: 16 }}>
+        <div style={{ fontSize: 10, color: "#3A3A42", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Career Totals</div>
+        <div className="stats-grid-6" style={{ gap: 1, background: "#1E1E22", borderRadius: 7, overflow: "hidden" }}>
+          <Stat label="Kills"      value={player.totalKills}      color="#4ECDC4" />
+          <Stat label="Deaths"     value={player.totalDeaths}     color="#FF4655" />
+          <Stat label="Assists"    value={player.totalAssists} />
+          <Stat label="Headshots"  value={player.totalHeadshots}  color="#4ECDC4" />
+          <Stat label="Damage"     value={player.totalDamage}     color="#FF6B35" />
+          <Stat label="Matches"    value={player.matchesPlayed} />
         </div>
- 
-        {/* ── Per Match Averages ── */}
-        <div style={{ marginTop: 10 }}>
-          <div style={{ fontSize: 10, color: "#3A3A42", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Per Match Averages</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 1, background: "#1E1E22", borderRadius: 7, overflow: "hidden" }}>
-            <Stat label="Avg Kills"   value={player.avgKills}   color="#4ECDC4" />
-            <Stat label="Avg Deaths"  value={player.avgDeaths}  color="#FF4655" />
-            <Stat label="Avg Assists" value={player.avgAssists} />
-            <Stat label="HS%"     value={`${player.hsp}%`}   color="#FFD700" />
-            <Stat label="K/D"         value={player.kd}         color={getScoreColor((player.kd || 0) * 40)} />
-            <Stat label="Avg Score"         value={player.avgScore}         color={getScoreColor((player.avgScore || 0) * 40)} />
-          </div>
+      </div>
+
+      {/* ── Per Match Averages ── */}
+      <div style={{ marginTop: 10 }}>
+        <div style={{ fontSize: 10, color: "#3A3A42", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Per Match Averages</div>
+        <div className="stats-grid-6" style={{ gap: 1, background: "#1E1E22", borderRadius: 7, overflow: "hidden" }}>
+          <Stat label="Avg Kills"   value={player.avgKills}   color="#4ECDC4" />
+          <Stat label="Avg Deaths"  value={player.avgDeaths}  color="#FF4655" />
+          <Stat label="Avg Assists" value={player.avgAssists} />
+          <Stat label="HS%"         value={`${player.hsp}%`}  color="#FFD700" />
+          <Stat label="K/D"         value={player.kd}         color={getScoreColor((player.kd || 0) * 40)} />
+          <Stat label="Avg Score"   value={player.avgScore}   color={getScoreColor((player.avgScore || 0) * 40)} />
         </div>
+      </div>
       </div>
 
       {/* ── Tabs ── */}
@@ -316,6 +316,27 @@ export default function PlayerPage() {
           .overview-grid { grid-template-columns: 1fr; }
         }
       `}</style>
+      <style>{`
+  .stats-grid-6 {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+  }
+  @media (max-width: 600px) {
+    .stats-grid-6 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 600px) {
+    .overview-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+`}</style>
     </div>
   );
 }
