@@ -320,10 +320,11 @@ export default function AddMatchPage() {
                             </div>
                             {/* Rank label */}
                             <div style={{ marginTop: 4, fontSize: 10, fontFamily: "'JetBrains Mono'", color: getScoreColor(score) }}>
-                              {score >= 80 ? "💀 Fragmaster" :
-                              score >= 65 ? "🔥 Fragger" :
-                              score >= 50 ? "⚡ Soldier" :
-                              score >= 35 ? "🛡️ Fighter" : "🌱 Rookie"}
+                              {score <= 40 ? "Bronze" :
+                              score <= 55 ? "Silver" :
+                              score <= 70 ? "Gold" :
+                              score <= 85 ? "Platinum" :
+                              score <= 100 ? "Fighter" : "Master"}
                             </div>
                           </div>
                         </div>
