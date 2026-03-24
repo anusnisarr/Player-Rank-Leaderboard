@@ -10,7 +10,7 @@ export default function LeaderboardPage() {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rankFilter, setRankFilter] = useState("All");
-  const [sortField, setSortField] = useState("score");
+  const [sortField, setSortField] = useState("avgScore");
   const [sortOrder, setSortOrder] = useState("desc");
   const [search, setSearch] = useState("");
   const [isMobile, setIsMobile] = useState(false);

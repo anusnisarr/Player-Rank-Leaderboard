@@ -6,12 +6,12 @@ import { recomputePlayerStats }  from "../utils/recomputePlayerStats.js"
 // GET all players — leaderboard
 export const getAllPlayers = async (req, res) => {
   try {
-    const { sort = "score", order = "desc", rank, team } = req.query;
+    const { sort = "avgScore", order = "desc", rank, team } = req.query;
     const filter = {};
     if (rank) filter.rank = rank;
     if (team) filter.team = new RegExp(team, "i");
 
-    const allowed = ["score", "totalKills", "matchesPlayed", "wins", "name"];
+    const allowed = ["avgScore", "totalKills", "matchesPlayed", "wins", "name"];
     const sortObj = { [allowed.includes(sort) ? sort : "avgScore"]: order === "asc" ? 1 : -1 };
 
     const players = await Player.find(filter).sort(sortObj);
@@ -21,7 +21,7 @@ export const getAllPlayers = async (req, res) => {
       _id: p._id,
       name: p.name, team: p.team, country: p.country, avatar: p.avatar,
       matchesPlayed: p.matchesPlayed, wins: p.wins, losses: p.losses,
-      score: p.score, rank: p.rank,
+      score: p.score,
       kd: p.kd, hsp: p.hsp, adr: p.adr, winRate: p.winRate,
       avgKills: p.avgKills, avgDeaths: p.avgDeaths,
       avgAssists: p.avgAssists, avgDamage: p.avgDamage, avgScore: p.avgScore,
