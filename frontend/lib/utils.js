@@ -79,3 +79,21 @@ export function calcMatchScore({ kills, deaths, assists, headshots, damage, roun
   const raw = (kills * 3) + (assists * 1.5) - (deaths * 2) + (hsp * 0.3) + (adr * 0.15);
   return +Math.min(100, Math.max(0, (raw / 100) * 100)).toFixed(1);
 }
+
+ export const combineDateTime = (match) => {
+    const base = new Date(match.date);
+    const time = new Date(match.createdAt);
+
+    base.setHours(
+      time.getHours(),
+      time.getMinutes(),
+      time.getSeconds(),
+      time.getMilliseconds()
+    );
+
+    return base;
+  }
+
+ export const sortMatchesByDateAndTime = (matches) => {
+    return matches.sort((a, b) => combineDateTime(b) - combineDateTime(a));
+  }

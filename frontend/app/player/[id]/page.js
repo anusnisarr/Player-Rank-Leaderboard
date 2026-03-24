@@ -7,6 +7,7 @@ import { RankBadge, ScoreDisplay, ScoreBar, PlayerAvatar } from "@/components/UI
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
+import { sortMatchesByDateAndTime } from "@/lib/utils";
 
 export default function PlayerPage() {
   const { id } = useParams();
@@ -14,6 +15,8 @@ export default function PlayerPage() {
   const [player, setPlayer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("overview");
+
+
 
   useEffect(() => {
     if (!id) return;
@@ -87,6 +90,8 @@ export default function PlayerPage() {
       <div style={{ fontSize: 9, color: "#7A7A8C", textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "'JetBrains Mono'", marginTop: 4 }}>{label}</div>
     </div>
   );
+
+  const sortedMatcheHistory = sortMatchesByDateAndTime(player.matchHistory || []);
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px" }}>
@@ -271,7 +276,7 @@ export default function PlayerPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {player.matchHistory.map(m => (
+                    {sortedMatcheHistory.map(m => (
                       <tr key={m._id}>
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", maxWidth: 140 }}>
                           <div style={{ fontSize: 12, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.title}</div>

@@ -5,6 +5,7 @@ import { timeAgo } from "@/lib/utils";
 import { ScoreDisplay } from "@/components/UI";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { sortMatchesByDateAndTime } from "@/lib/utils";
 
 export default function MatchesPage() {
   const [matches, setMatches] = useState([]);
@@ -30,8 +31,8 @@ export default function MatchesPage() {
   // };
 
   const combineDateTime = (match) => {
-    const base = new Date(match.date);        // date only
-    const time = new Date(match.createdAt);   // full timestamp
+    const base = new Date(match.date);
+    const time = new Date(match.createdAt);
 
     base.setHours(
       time.getHours(),
@@ -43,7 +44,7 @@ export default function MatchesPage() {
     return base;
   }
 
-  const sortedMatches = matches.sort((a, b) => combineDateTime(b) - combineDateTime(a));
+  const sortedMatches = sortMatchesByDateAndTime(matches);
 
 
   return (

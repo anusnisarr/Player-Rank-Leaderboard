@@ -12,7 +12,7 @@ export const getAllPlayers = async (req, res) => {
     if (team) filter.team = new RegExp(team, "i");
 
     const allowed = ["score", "totalKills", "matchesPlayed", "wins", "name"];
-    const sortObj = { [allowed.includes(sort) ? sort : "score"]: order === "asc" ? 1 : -1 };
+    const sortObj = { [allowed.includes(sort) ? sort : "avgScore"]: order === "asc" ? 1 : -1 };
 
     const players = await Player.find(filter).sort(sortObj);
 
