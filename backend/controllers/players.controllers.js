@@ -59,12 +59,12 @@ export const getSinglePlayer = async (req, res) => {
 
     const matches = await Match.find({ "playerStats.player": player._id })
       .sort({ date: -1 }).limit(20)
-      .select("title map date scoreA scoreB teamA teamB totalRounds playerStats");
+      .select("title map date createdAt scoreA scoreB teamA teamB totalRounds playerStats");
 
     const matchHistory = matches.map(m => {
       const s = m.playerStats.find(s => s.player.toString() === player._id.toString());
       return {
-        _id: m._id, title: m.title, map: m.map, date: m.date,
+        _id: m._id, title: m.title, map: m.map, date: m.date, createdAt: m.createdAt,
         scoreA: m.scoreA, scoreB: m.scoreB, teamA: m.teamA, teamB: m.teamB,
         kills: s?.kills, deaths: s?.deaths, assists: s?.assists,
         headshots: s?.headshots, damage: s?.damage,
