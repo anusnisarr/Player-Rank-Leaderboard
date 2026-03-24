@@ -29,6 +29,7 @@ export const getAllPlayers = async (req, res) => {
       totalAssists: p.totalAssists, totalRounds: p.totalRounds,
       totalHeadshots: p.totalHeadshots, totalDamage: p.totalDamage,
       createdAt: p.createdAt
+      
     }));
 
     res.json({ success: true, data: out, count: out.length });

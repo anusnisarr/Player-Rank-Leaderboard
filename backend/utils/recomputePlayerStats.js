@@ -52,6 +52,7 @@ for (const match of lastMatches) {
   const s = match.playerStats.find(s => s.player.toString() === playerId.toString());
   if (!s) continue;
 
+//recent 5 matches score sum for rank calculation
   const score = await Player.computeScore({
     kills: Number(s.kills) || 0,
     deaths: Number(s.deaths) || 0,
@@ -61,8 +62,6 @@ for (const match of lastMatches) {
     rounds: Number(s.rounds) || 1,
     won: Boolean(s.won),
   });
-
-  //recent 5 matches score sum for rank calculation
   recentScoreSum += score;
 }
 

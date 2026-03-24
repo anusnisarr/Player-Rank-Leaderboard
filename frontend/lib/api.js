@@ -20,4 +20,7 @@ export const getMatch = (id) => api.get(`/matches/${id}`);
 export const createMatch = (data) => api.post("/matches", data);
 export const deleteMatch = (id) => api.delete(`/matches/${id}`);
 
+// utils
+export const getHealth = () => api.get("/health");
+
 export default api;
