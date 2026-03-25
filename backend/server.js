@@ -8,6 +8,7 @@ import cors from "cors";
 //routes import
 import playerRoutes from "./routes/players.routes.js";
 import matchRoutes from "./routes/matches.routes.js";
+import rawRouter from "./routes/raw.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -17,6 +18,7 @@ app.use(express.json());
 
 app.use("/api/players", playerRoutes);
 app.use("/api/matches", matchRoutes);
+app.use("/api/raw", rawRouter);
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
