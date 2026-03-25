@@ -1,6 +1,6 @@
 import express from "express";
 const router   = express.Router();
-import rawEvent from "../models/rawEvent.models.js";
+import rawEvent from "../models/rawEvents.models.js";
 import 'dotenv/config'
 
 
