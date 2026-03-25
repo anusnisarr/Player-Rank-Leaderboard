@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getPlayers, createMatch } from "@/lib/api";
-import { MAPS } from "@/lib/utils";
+import { MAPS , getScoreColor } from "@/lib/utils";
 import toast from "react-hot-toast";
 
 const EMPTY_STAT = {
@@ -17,16 +17,15 @@ const EMPTY_STAT = {
 const L = { display: "block", fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 5 };
 
 // Auto-estimate KAST% from kills/assists/deaths/rounds
-function estimateKast(kills, deaths, assists, rounds) {
-  if (!rounds || rounds === 0) return 70;
-  const k = Number(kills) || 0;
-  const d = Number(deaths) || 0;
-  const a = Number(assists) || 0;
-  const r = Number(rounds);
-  // Heuristic: each kill/assist contributes to a round, survival is the rest
-  const positiveRounds = Math.min(r, k + a + Math.max(0, r - d));
-  const raw = (positiveRounds / r) * 100;
-  return Math.min(95, Math.max(30, Math.round(raw)));
+function estimateScore(kills=0, deaths=0, assists=0, headshots=0, damage=0, won=false ) {
+  
+  // const adr = damage / rounds;
+  const damage_normalized = damage / 100;
+  const winBonus = won ? 10 : 0;
+
+  const raw = (kills * 3) + (assists * 1.5) - (deaths * 2) + (headshots * 1) + (damage_normalized * 0.5) + winBonus;
+  
+  return Math.max(0, Number(raw.toFixed(1)));
 }
 
 // Convert HS% → headshot count
@@ -92,12 +91,14 @@ export default function AddMatchPage() {
   const addPlayer = () => setStats((s) => [...s, { ...EMPTY_STAT }]);
   const removePlayer = (idx) => setStats((s) => s.filter((_, i) => i !== idx));
 
-  const getKast = (s) => s.kastMode === "manual" && s.kastManual !== ""
-    ? Number(s.kastManual)
-    : estimateKast(s.kills, s.deaths, s.assists, match.totalRounds);
 
   const getHeadshots = (s) => hspToHeadshots(s.kills, s.hsp);
 
+  const getScore = (s) => {
+    const score  = estimateScore(s.kills, s.deaths, s.assists, getHeadshots(s), s.damage, s.won);
+    return score;
+  }
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!match.title.trim()) return toast.error("Match title is required");
@@ -227,10 +228,11 @@ export default function AddMatchPage() {
           </div>
 
           {stats.map((stat, idx) => {
+
             const hs = getHeadshots(stat);
-            const kast = getKast(stat);
-            const hasPreview = stat.kills !== "" && match.totalRounds;
-            const rounds = Number(match.totalRounds) || 1;
+            const score = getScore(stat);
+
+            
 
             return (
               <div key={idx} className="card" style={{ padding: "16px", marginBottom: 12 }}>
@@ -277,21 +279,18 @@ export default function AddMatchPage() {
                   <StatBox label="DMG — Damage" value={stat.damage} onChange={(v) => setStat(idx, "damage", v)} max={99999} />
                 </div>
 
-                {/* Auto-computed fields */}
+                {/* Auto-calculated section */}
                 <div style={{ marginTop: 14, padding: "12px 14px", background: "#0A0A0B", borderRadius: 6, border: "1px solid #1E1E22" }}>
                   <div style={{ fontSize: 10, fontFamily: "'JetBrains Mono'", color: "#3A3A42", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>
                     Auto-calculated
                   </div>
-                  <div style={{ display: "flex", gap: 20, flexWrap: "wrap", alignItems: "flex-end" }}>
+                  <div style={{ display: "flex", gap: 20, flexWrap: "wrap", alignItems: "center" }}>
 
-                    {/* Headshots auto */}
+                    {/* Headshots */}
                     <div>
                       <div style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>Headshots</div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <div style={{
-                          fontFamily: "'JetBrains Mono'", fontSize: 20, fontWeight: 500,
-                          color: stat.kills && stat.hsp ? "#E8E8F0" : "#3A3A42",
-                        }}>
+                        <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 20, fontWeight: 500, color: stat.kills && stat.hsp !== "" ? "#E8E8F0" : "#3A3A42" }}>
                           {stat.kills && stat.hsp !== "" ? hs : "—"}
                         </div>
                         {stat.kills && stat.hsp !== "" && (
@@ -302,79 +301,42 @@ export default function AddMatchPage() {
                       </div>
                     </div>
 
-                    {/* Divider */}
                     <div style={{ width: 1, background: "#1E1E22", alignSelf: "stretch" }} />
 
-                    {/* KAST% */}
-                    <div style={{ flex: 1, minWidth: 200 }}>
+                    {/* Live Score */}
+                    <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>
-                        KAST%
-                        <span style={{ marginLeft: 6, color: "#3A3A42", textTransform: "none", letterSpacing: 0 }}>
-                          {stat.kastMode === "auto" ? "(estimated)" : "(manual)"}
-                        </span>
+                        Est. Score
                       </div>
-
-                      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                        <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 20, fontWeight: 500, color: "#A8DADC", minWidth: 40 }}>
-                          {kast}%
+                      {stat.kills !== "" ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 28, fontWeight: 700, color: getScoreColor(score) }}>
+                            {score}
+                          </div>
+                          <div style={{ flex: 1, maxWidth: 140 }}>
+                            {/* Progress bar */}
+                            <div style={{ background: "#1E1E22", borderRadius: 3, overflow: "hidden", height: 4 }}>
+                              <div style={{ width: `${Math.min(100, score)}%`, height: "100%", background: getScoreColor(score), borderRadius: 3, transition: "width 0.3s ease" }} />
+                            </div>
+                            {/* Rank label */}
+                            <div style={{ marginTop: 4, fontSize: 10, fontFamily: "'JetBrains Mono'", color: getScoreColor(score) }}>
+                              {score <= 40 ? "Bronze" :
+                              score <= 55 ? "Silver" :
+                              score <= 70 ? "Gold" :
+                              score <= 85 ? "Platinum" :
+                              score <= 100 ? "Fighter" : "Master"}
+                            </div>
+                          </div>
                         </div>
-
-                        {/* Toggle auto/manual */}
-                        <div style={{ display: "flex", gap: 4 }}>
-                          <button type="button"
-                            onClick={() => setStat(idx, "kastMode", "auto")}
-                            style={{ padding: "3px 10px", borderRadius: 4, fontSize: 11, fontFamily: "'JetBrains Mono'", cursor: "pointer", background: stat.kastMode === "auto" ? "rgba(168,218,220,0.12)" : "transparent", color: stat.kastMode === "auto" ? "#A8DADC" : "#3A3A42", border: `1px solid ${stat.kastMode === "auto" ? "rgba(168,218,220,0.3)" : "#1E1E22"}`, transition: "all 0.15s" }}>
-                            Auto
-                          </button>
-                          <button type="button"
-                            onClick={() => setStat(idx, "kastMode", "manual")}
-                            style={{ padding: "3px 10px", borderRadius: 4, fontSize: 11, fontFamily: "'JetBrains Mono'", cursor: "pointer", background: stat.kastMode === "manual" ? "rgba(168,218,220,0.12)" : "transparent", color: stat.kastMode === "manual" ? "#A8DADC" : "#3A3A42", border: `1px solid ${stat.kastMode === "manual" ? "rgba(168,218,220,0.3)" : "#1E1E22"}`, transition: "all 0.15s" }}>
-                            Manual
-                          </button>
+                      ) : (
+                        <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 20, color: "#3A3A42" }}>
+                          — <span style={{ fontSize: 11 }}>fill in stats above</span>
                         </div>
-
-                        {stat.kastMode === "manual" && (
-                          <input
-                            className="input"
-                            type="number" min="0" max="100"
-                            placeholder="e.g. 74"
-                            value={stat.kastManual}
-                            onChange={(e) => setStat(idx, "kastManual", e.target.value)}
-                            style={{ width: 80, fontFamily: "'JetBrains Mono'", textAlign: "center", padding: "5px 8px", fontSize: 13 }}
-                          />
-                        )}
-                      </div>
+                      )}
                     </div>
+
                   </div>
                 </div>
-
-                {/* Live preview bar */}
-                {hasPreview && (
-                  <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #1E1E22", display: "flex", gap: 18, flexWrap: "wrap" }}>
-                    {[
-                      { label: "K/D", val: stat.deaths > 0 ? (Number(stat.kills) / Number(stat.deaths)).toFixed(2) : "∞" },
-                      { label: "KPR", val: (Number(stat.kills) / rounds).toFixed(2) },
-                      { label: "ADR", val: (Number(stat.damage) / rounds).toFixed(1) },
-                      { label: "Rating ≈", val: (() => {
-                          const k = Number(stat.kills); const d = Number(stat.deaths); const a = Number(stat.assists);
-                          const dmg = Number(stat.damage); const h = hs;
-                          if (!k && !d) return "—";
-                          const kpr = k / rounds; const surv = (rounds - d) / rounds;
-                          const kastR = kast / 100; const apr = a / rounds / 0.3;
-                          const hsR = k > 0 ? (h / k) / 0.45 : 0; const adrR = dmg / rounds / 75;
-                          const r = kpr/0.679*0.38 + surv*0.22 + kastR*0.22 + apr*0.1 + hsR*0.04 + adrR*0.04;
-                          return r.toFixed(2);
-                        })(),
-                        highlight: true
-                      },
-                    ].map(({ label, val, highlight }) => (
-                      <div key={label} style={{ textAlign: "center" }}>
-                        <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 14, fontWeight: 500, color: highlight ? "#FF4655" : "#A8DADC" }}>{val}</div>
-                        <div style={{ fontSize: 9, color: "#7A7A8C", textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "'JetBrains Mono'", marginTop: 1 }}>{label}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             );
           })}
