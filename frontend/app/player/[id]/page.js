@@ -28,7 +28,7 @@ export default function PlayerPage() {
   if (loading) return <div style={{ maxWidth: 900, margin: "0 auto", padding: "80px 16px", textAlign: "center", color: "#7A7A8C" }}>Loading...</div>;
   if (!player)  return <div style={{ maxWidth: 900, margin: "0 auto", padding: "80px 16px", textAlign: "center", color: "#7A7A8C" }}>Player not found.</div>;
 
-  const cfg = RANK_CONFIG[player.rank] || RANK_CONFIG["Bronze"];
+  const cfg = RANK_CONFIG[player.rank] || RANK_CONFIG["Unranked"];
 
   // Radar: simple 0-100 normalized stats any friend can understand
   const radarData = [

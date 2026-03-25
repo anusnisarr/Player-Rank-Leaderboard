@@ -88,7 +88,7 @@ export default function LeaderboardPage() {
             // Mobile: vertical ranked list
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {top3.map((p, i) => {
-                const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Bronze"];
+                const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Unranked"];
                 return (
                   <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none" }}>
                     <div className="card" style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, position: "relative", overflow: "hidden", borderColor: i === 0 ? cfg.border : undefined }}>
@@ -119,7 +119,7 @@ export default function LeaderboardPage() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1.12fr 1fr", gap: 12, alignItems: "end" }}>
               {[top3[1], top3[0], top3[2]].map((p, i) => {
                 const actualRank = i === 1 ? 1 : i === 0 ? 2 : 3;
-                const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Bronze"];
+                const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Unranked"];
                 const isFirst = actualRank === 1;
                 return (
                   <Link key={p._id} href={`/player/${p._id}`} style={{ textDecoration: "none" }}>

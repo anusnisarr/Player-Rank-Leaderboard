@@ -1,15 +1,74 @@
 // ─── Rank config — simple, friend-group friendly ─────────────────────────────
+// export const RANK_CONFIG = {
+//   "Unranked": { color: "#CD7F32", bg: "rgba(205,127,50,0.12)", border: "rgba(205,127,50,0.35)", icon: "", scoreRange : "" },
+//   "Bronze": { color: "#CD7F32", bg: "rgba(205,127,50,0.12)", border: "rgba(205,127,50,0.35)", icon: "🥉", scoreRange : "0 - 40 score" },
+//   "Silver": { color: "#C0C0C0", bg: "rgba(192,192,192,0.12)", border: "rgba(192,192,192,0.35)", icon: "🥈", scoreRange : "40 - 55 score" },
+//   "Gold": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "🥇", scoreRange : "55 - 70 score" },
+//   "Platinum": { color: "#FF6B35", bg: "rgba(255,107,53,0.12)", border: "rgba(255,107,53,0.35)", icon: "🔥", scoreRange : "70 - 85 score" },
+//   "Elite": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "💀",  scoreRange : "85 - 100 score" },
+//   "Master": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "👑",  scoreRange : "100+ score " },
+// };
+
 export const RANK_CONFIG = {
-  "Bronze": { color: "#CD7F32", bg: "rgba(205,127,50,0.12)", border: "rgba(205,127,50,0.35)", icon: "🥉", scoreRange : "0 - 40 score" },
-  "Silver": { color: "#C0C0C0", bg: "rgba(192,192,192,0.12)", border: "rgba(192,192,192,0.35)", icon: "🥈", scoreRange : "40 - 55 score" },
-  "Gold": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "🥇", scoreRange : "55 - 70 score" },
-  "Platinum": { color: "#FF6B35", bg: "rgba(255,107,53,0.12)", border: "rgba(255,107,53,0.35)", icon: "🔥", scoreRange : "70 - 85 score" },
-  "Elite": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "💀",  scoreRange : "85 - 100 score" },
-  "Master": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "👑",  scoreRange : "100+ score " },
+  Unranked: {
+    color: "#8A8A8A",
+    bg: "rgba(138,138,138,0.12)",
+    border: "rgba(138,138,138,0.35)",
+    icon: "❔",
+    scoreRange: ""
+  },
+
+  Bronze: {
+    color: "#CD7F32",
+    bg: "rgba(205,127,50,0.12)",
+    border: "rgba(205,127,50,0.35)",
+    icon: "🥉",
+    scoreRange: "0 - 40 score"
+  },
+
+  Silver: {
+    color: "#C0C0C0",
+    bg: "rgba(192,192,192,0.12)",
+    border: "rgba(192,192,192,0.35)",
+    icon: "🥈",
+    scoreRange: "40 - 55 score"
+  },
+
+  Gold: {
+    color: "#FFD700",
+    bg: "rgba(255,215,0,0.12)",
+    border: "rgba(255,215,0,0.35)",
+    icon: "🥇",
+    scoreRange: "55 - 70 score"
+  },
+
+  Platinum: {
+    color: "#00E5FF",
+    bg: "rgba(0,229,255,0.12)",
+    border: "rgba(0,229,255,0.35)",
+    icon: "💎",
+    scoreRange: "70 - 85 score"
+  },
+
+  Elite: {
+    color: "#FF4655",
+    bg: "rgba(255,70,85,0.12)",
+    border: "rgba(255,70,85,0.35)",
+    icon: "🔥",
+    scoreRange: "85 - 100 score"
+  },
+
+  Master: {
+    color: "#A855F7",
+    bg: "rgba(168,85,247,0.12)",
+    border: "rgba(168,85,247,0.35)",
+    icon: "👑",
+    scoreRange: "100+ score"
+  }
 };
 
 // export const RANK_ORDER = ["Fragmaster", "Fragger", "Soldier", "Fighter", "Bronze"];
-export const RANK_ORDER = ["Bronze", "Silver", "Gold", "Platinum", "Elite" , "Master"];
+export const RANK_ORDER = ["Unranked", "Bronze", "Silver", "Gold", "Platinum", "Elite" , "Master"];
 
 export const MAPS = [
   "Mirage", "Dust 2", "Inferno", "Nuke", "Overpass",
