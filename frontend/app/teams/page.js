@@ -208,7 +208,7 @@ export default function TeamRandomizerPage() {
         ) : allPlayers.length === 0 ? (
           <div style={{ color: "#7A7A8C", fontSize: 13, textAlign: "center", padding: 20 }}>No players found. Add some players first.</div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 8 }}>
+          <div className="player-selector" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 8 }}>
             {allPlayers.map(p => {
               const isSelected = selected.find(s => s._id === p._id);
               const cfg = RANK_CONFIG[p.rank] || RANK_CONFIG["Unranked"];
@@ -287,7 +287,7 @@ export default function TeamRandomizerPage() {
 
       {/* ── Teams ── */}
       {teams && (
-        <div className="animate-slide" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div className="animate-slide teams-grid">
           <TeamCard team={teams[0]} name="TEAM ALPHA" color="#4ECDC4" icon="🔵" />
           <TeamCard team={teams[1]} name="TEAM BRAVO" color="#FF6B35" icon="🔴" />
         </div>
@@ -317,11 +317,23 @@ export default function TeamRandomizerPage() {
         </div>
       )}
 
-      <style>{`
-        @media (max-width: 560px) {
-          .team-grid { grid-template-columns: 1fr !important; }
+    <style>{`
+      .teams-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      @media (max-width: 600px) {
+        .teams-grid {
+          grid-template-columns: 1fr;
         }
-      `}</style>
+      }
+      @media (max-width: 600px) {
+        .player-selector {
+          grid-template-columns: 1fr !important;
+        }
+      }
+    `}</style>
     </div>
   );
 }
