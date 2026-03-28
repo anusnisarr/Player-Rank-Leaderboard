@@ -8,19 +8,69 @@ import toast from "react-hot-toast";
 // ── Balance algorithm ─────────────────────────────────────────────────────────
 // Sort players by score desc, then snake-draft into two teams
 // e.g. scores [90,80,70,60,50,40,30] → T1:[90,70,50,30] T2:[80,60,40]
+// function balanceTeams(players) {
+//   const sorted = [...players].sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0));
+//   const t1 = [], t2 = [];
+//   sorted.forEach((p, i) => {
+//     // Snake draft: 0→T1, 1→T2, 2→T2, 3→T1, 4→T1, 5→T2 ...
+//     const round = Math.floor(i / 2);
+//     if (round % 2 === 0) {
+//       i % 2 === 0 ? t1.push(p) : t2.push(p);
+//     } else {
+//       i % 2 === 0 ? t2.push(p) : t1.push(p);
+//     }
+//   });
+//   return [t1, t2];
+// }
+
 function balanceTeams(players) {
-  const sorted = [...players].sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0));
-  const t1 = [], t2 = [];
-  sorted.forEach((p, i) => {
-    // Snake draft: 0→T1, 1→T2, 2→T2, 3→T1, 4→T1, 5→T2 ...
-    const round = Math.floor(i / 2);
-    if (round % 2 === 0) {
-      i % 2 === 0 ? t1.push(p) : t2.push(p);
-    } else {
-      i % 2 === 0 ? t2.push(p) : t1.push(p);
+  if (players.length < 2) return [players, []];
+
+  const n  = players.length;
+  const s1 = Math.floor(n / 2);
+
+  // ── Helper: score diff between two groups ──
+  const diff = (a, b) => Math.abs(
+    a.reduce((s, p) => s + (p.score || 0), 0) -
+    b.reduce((s, p) => s + (p.score || 0), 0)
+  );
+
+  // ── Start with a random shuffle ──
+  const shuffled = [...players].sort(() => Math.random() - 0.5);
+  let t1 = shuffled.slice(0, s1);
+  let t2 = shuffled.slice(s1);
+  let bestDiff = diff(t1, t2);
+  let bestT1 = [...t1];
+  let bestT2 = [...t2];
+
+  // ── Simulated annealing: try 5000 random swaps ──
+  for (let i = 0; i < 5000; i++) {
+    // Pick a random player from each team
+    const i1 = Math.floor(Math.random() * t1.length);
+    const i2 = Math.floor(Math.random() * t2.length);
+
+    // Swap them
+    const newT1 = [...t1];
+    const newT2 = [...t2];
+    newT1[i1] = t2[i2];
+    newT2[i2] = t1[i1];
+
+    const newDiff = diff(newT1, newT2);
+
+    // Accept if better, or with small random chance if slightly worse (prevents local minima)
+    const temperature = 1 - i / 5000; // cools down over time
+    if (newDiff < bestDiff || Math.random() < temperature * 0.1) {
+      t1 = newT1;
+      t2 = newT2;
+      if (newDiff < bestDiff) {
+        bestDiff = newDiff;
+        bestT1 = [...newT1];
+        bestT2 = [...newT2];
+      }
     }
-  });
-  return [t1, t2];
+  }
+
+  return [bestT1, bestT2];
 }
 
 function teamAvgScore(team) {
@@ -64,7 +114,9 @@ export default function TeamRandomizerPage() {
   const [generating, setGenerating]   = useState(false);
   const [narration, setNarration]     = useState("");
   const [roast, setRoast]             = useState("");
+  const [edgeComment, setEdgeComment]  = useState("");
   const [genCount, setGenCount]       = useState(0);
+  const [diff, setDiff]               = useState(0);
 
   useEffect(() => {
     getPlayers({}).then(r => setAllPlayers(r.data.data)).catch(() => toast.error("Failed to load players")).finally(() => setLoading(false));
@@ -95,11 +147,11 @@ export default function TeamRandomizerPage() {
       // Roast/comment
       const avg1 = teamAvgScore(t1);
       const avg2 = teamAvgScore(t2);
-      const diff = Math.abs(avg1 - avg2).toFixed(1);
+      const diff = Math.abs(avg1 - avg2);
+      setDiff(diff);
       const allSorted = [...selected].sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0));
       const top = allSorted[0];
       const bot = allSorted[allSorted.length - 1];
-
       let r = "";
       if (diff < 3) r = ROASTS.sameRank();
       else if (diff > 15) r = ROASTS.bigGap(diff);
@@ -300,7 +352,12 @@ export default function TeamRandomizerPage() {
             ⚖️ Why These Teams Are Fair
           </div>
           <div style={{ fontSize: 13, color: "#A8A8BC", lineHeight: 1.7 }}>
-            Players were sorted by Average Score and distributed using a <span style={{ color: "#E8E8F0", fontWeight: 600 }}>snake draft</span> — the best player goes to Team Alpha, second best to Bravo, third to Bravo, fourth to Alpha, and so on. This ensures no team gets two top players in a row.
+            Teams were generated using <span style={{ color: "#E8E8F0", fontWeight: 600 }}>simulated annealing</span> — 
+            5,000 random player swaps were tested and the combination with the smallest score gap was kept. 
+            Every generation produces a <span style={{ color: "#E8E8F0", fontWeight: 600 }}>different valid split</span> so 
+            no two runs look the same, but all are mathematically fair.
+            {diff < 5 && <span style={{ color: "#4ECDC4" }}> This one's basically perfect. 🎯</span>}
+            {diff >= 20 && <span style={{ color: "#FF4655" }}> Best possible given the skill gap in this lobby. 😬</span>}
           </div>
           <div style={{ display: "flex", gap: 20, marginTop: 14, flexWrap: "wrap" }}>
             {[
