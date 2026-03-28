@@ -129,7 +129,6 @@ export default function AddMatchPage() {
           headshots: getHeadshots(s),
           hsp: Number(s.hsp),
           damage: Number(s.damage),
-          kast: getKast(s),
           rounds,
           won: s.won,
         })),
@@ -137,6 +136,7 @@ export default function AddMatchPage() {
       toast.success("Match saved! Rankings updated.");
       router.push("/");
     } catch (err) {
+      console.log(err)
       toast.error(err.response?.data?.error || "Failed to add match");
     } finally {
       setSubmitting(false);
