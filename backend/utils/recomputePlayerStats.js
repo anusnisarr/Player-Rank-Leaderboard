@@ -72,7 +72,7 @@ for (const match of lastMatches) {
   : 0;
 
 
-  const rank = matches.length >= 5 ? Player.computeRank(avgScore) : "Unranked ";
+  const rank = matches.length >= 5 ? Player.computeRank(avgScore) : "Unranked";
 
   await Player.findByIdAndUpdate(playerId, {
     totalKills, totalDeaths, totalAssists,
