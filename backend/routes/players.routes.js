@@ -1,10 +1,12 @@
 import express from "express"
-import { getAllPlayers, recomputeAllPlayersScores, getSinglePlayer, createPlayer, updatePlayer, deletePlayer } from "../controllers/players.controllers.js";
+import { getAllPlayers, recomputeAllPlayersScores, getAllTeams , getSinglePlayer, createPlayer, updatePlayer, deletePlayer } from "../controllers/players.controllers.js";
 
 const router = express.Router();
 
 // GET all players — leaderboard
 router.get("/", getAllPlayers);
+
+router.get("/teams", getAllTeams);
 
 // GET all players Ids
 router.get("/recomputeAllScores", recomputeAllPlayersScores);

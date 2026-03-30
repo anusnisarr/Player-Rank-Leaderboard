@@ -38,6 +38,17 @@ export const getAllPlayers = async (req, res) => {
   }
 };
 
+// GET all Team
+export const getAllTeams = async (req, res) => {
+  try {
+    const players = await Player.find().distinct("team");
+
+    res.json({ success: true, data: players });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 // GET all players Ids
 export const recomputeAllPlayersScores = async (req, res) => {
   try {

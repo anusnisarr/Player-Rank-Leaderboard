@@ -1,3 +1,4 @@
+
 // ─── Rank config — simple, friend-group friendly ─────────────────────────────
 // export const RANK_CONFIG = {
 //   "Unranked": { color: "#CD7F32", bg: "rgba(205,127,50,0.12)", border: "rgba(205,127,50,0.35)", icon: "", scoreRange : "" },
@@ -8,6 +9,7 @@
 //   "Elite": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "💀",  scoreRange : "85 - 100 score" },
 //   "Master": { color: "#FFD700", bg: "rgba(255,215,0,0.12)", border: "rgba(255,215,0,0.35)", icon: "👑",  scoreRange : "100+ score " },
 // };
+
 
 export const RANK_CONFIG = {
   Unranked: {
@@ -67,8 +69,10 @@ export const RANK_CONFIG = {
   }
 };
 
+getTeams
 // export const RANK_ORDER = ["Fragmaster", "Fragger", "Soldier", "Fighter", "Bronze"];
 export const RANK_ORDER = ["Unranked", "Bronze", "Silver", "Gold", "Platinum", "Elite" , "Master"];
+export const TEAM = ["Unranked", "Bronze", "Silver", "Gold", "Platinum", "Elite" , "Master"];
 
 export const MAPS = [
   "Mirage", "Dust 2", "Inferno", "Nuke", "Overpass",

@@ -9,6 +9,7 @@ const api = axios.create({
 
 // Players
 export const getPlayers = (params = {}) => api.get("/players", { params });
+export const getTeams = () => api.get("/players/teams");
 export const getPlayer = (id) => api.get(`/players/${id}`);
 export const createPlayer = (data) => api.post("/players", data);
 export const updatePlayer = (id, data) => api.put(`/players/${id}`, data);
