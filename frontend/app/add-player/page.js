@@ -19,6 +19,7 @@ export default function AddPlayerPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) return toast.error("Player name is required");
+    if (form.team) form.team = form.team.trim();
     try {
       setLoading(true);
       await createPlayer(form);

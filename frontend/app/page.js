@@ -1,15 +1,17 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { getPlayers } from "@/lib/api";
+import { getPlayers ,getTeams } from "@/lib/api";
 import { RANK_CONFIG, RANK_ORDER, getScoreColor } from "@/lib/utils";
 import { RankBadge, ScoreDisplay, ScoreBar, PlayerAvatar, RankNum, EmptyState, FilterBtn, Skeleton } from "@/components/UI";
 import toast from "react-hot-toast";
 
 export default function LeaderboardPage() {
   const [players, setPlayers] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rankFilter, setRankFilter] = useState("All");
+  const [teamFilter, setTeamFilter] = useState("All");
   const [sortField, setSortField] = useState("avgScore");
   const [sortOrder, setSortOrder] = useState("desc");
   const [search, setSearch] = useState("");
@@ -28,7 +30,9 @@ export default function LeaderboardPage() {
       const params = { sort: sortField, order: sortOrder };
       if (rankFilter !== "All") params.rank = rankFilter;
       const res = await getPlayers(params);
+      const teams = await getTeams();
       setPlayers(res.data.data);
+      setTeams(teams.data.data);
     } catch {
       toast.error("Failed to load players");
     } finally {
@@ -36,7 +40,23 @@ export default function LeaderboardPage() {
     }
   }, [rankFilter, sortField, sortOrder]);
 
+    const fetchTeams = useCallback(async () => {
+    try {
+      setLoading(true);
+      const params = { sort: sortField, order: sortOrder };
+      if (teamFilter !== "All") params.team = teamFilter;
+      const teams = await getTeams();
+      console.log(teams.data.data);
+      setTeams(teams.data.data);
+    } catch {
+      toast.error("Failed to load Teams");
+    } finally {
+      setLoading(false);
+    }
+  }, [teamFilter]);
+
   useEffect(() => { fetchPlayers(); }, [fetchPlayers]);
+  useEffect(() => { fetchTeams(); }, [fetchTeams]);
 
   const handleSort = (field) => {
     console.log(players);
@@ -170,6 +190,15 @@ export default function LeaderboardPage() {
             <FilterBtn label="All" active={rankFilter === "All"} onClick={() => setRankFilter("All")} />
             {RANK_ORDER.map(r => (
               <FilterBtn key={r} label={`${RANK_CONFIG[r]?.icon} ${r}`} active={rankFilter === r} onClick={() => setRankFilter(r)} />
+            ))}
+          </div>
+        </div>
+        <div style={{ overflowX: "auto", paddingBottom: 4 }}>
+          <div style={{ display: "flex", gap: 4, minWidth: "max-content", alignItems: "center" }}>
+            <span style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em", marginRight: 4 }}>Rank</span>
+            <FilterBtn label="All" active={teamFilter === "All"} onClick={() => setTeamFilter("All")} />
+            {teams.map(r => (
+              <FilterBtn key={r} label={`${r}`} active={teamFilter === r} onClick={() => setTeamFilter(r)} />
             ))}
           </div>
         </div>

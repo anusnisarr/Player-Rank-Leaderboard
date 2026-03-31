@@ -1,4 +1,4 @@
-
+import { getTeams } from "./api";
 // ─── Rank config — simple, friend-group friendly ─────────────────────────────
 // export const RANK_CONFIG = {
 //   "Unranked": { color: "#CD7F32", bg: "rgba(205,127,50,0.12)", border: "rgba(205,127,50,0.35)", icon: "", scoreRange : "" },
@@ -69,10 +69,15 @@ export const RANK_CONFIG = {
   }
 };
 
-getTeams
+
+
+
+
 // export const RANK_ORDER = ["Fragmaster", "Fragger", "Soldier", "Fighter", "Bronze"];
 export const RANK_ORDER = ["Unranked", "Bronze", "Silver", "Gold", "Platinum", "Elite" , "Master"];
-export const TEAM = ["Unranked", "Bronze", "Silver", "Gold", "Platinum", "Elite" , "Master"];
+
+export const TEAM = [];
+
 
 export const MAPS = [
   "Mirage", "Dust 2", "Inferno", "Nuke", "Overpass",
