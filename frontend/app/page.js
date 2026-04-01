@@ -29,24 +29,20 @@ export default function LeaderboardPage() {
       setLoading(true);
       const params = { sort: sortField, order: sortOrder };
       if (rankFilter !== "All") params.rank = rankFilter;
+      if (teamFilter !== "All") params.team = teamFilter;
       const res = await getPlayers(params);
-      const teams = await getTeams();
       setPlayers(res.data.data);
-      setTeams(teams.data.data);
     } catch {
       toast.error("Failed to load players");
     } finally {
       setLoading(false);
     }
-  }, [rankFilter, sortField, sortOrder]);
+  }, [teamFilter, rankFilter, sortField, sortOrder]);
 
-    const fetchTeams = useCallback(async () => {
+  const fetchTeams = useCallback(async () => {
     try {
       setLoading(true);
-      const params = { sort: sortField, order: sortOrder };
-      if (teamFilter !== "All") params.team = teamFilter;
       const teams = await getTeams();
-      console.log(teams.data.data);
       setTeams(teams.data.data);
     } catch {
       toast.error("Failed to load Teams");
@@ -195,7 +191,7 @@ export default function LeaderboardPage() {
         </div>
         <div style={{ overflowX: "auto", paddingBottom: 4 }}>
           <div style={{ display: "flex", gap: 4, minWidth: "max-content", alignItems: "center" }}>
-            <span style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em", marginRight: 4 }}>Rank</span>
+            <span style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em", marginRight: 4 }}>Team</span>
             <FilterBtn label="All" active={teamFilter === "All"} onClick={() => setTeamFilter("All")} />
             {teams.map(r => (
               <FilterBtn key={r} label={`${r}`} active={teamFilter === r} onClick={() => setTeamFilter(r)} />
