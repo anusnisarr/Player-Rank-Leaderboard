@@ -2,29 +2,28 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getPlayers, createMatch } from "@/lib/api";
-import { MAPS , getScoreColor } from "@/lib/utils";
+import { MAPS, getScoreColor } from "@/lib/utils";
+import ImportMatch from "@/components/ImportMatch.js";
 import toast from "react-hot-toast";
 
 const EMPTY_STAT = {
   player: "", kills: "", deaths: "", assists: "",
   hsp: "",      // HS% — typed directly from CS2 scoreboard
   damage: "",
-  kastMode: "auto", // "auto" | "manual"
-  kastManual: "",
   won: false,
 };
 
 const L = { display: "block", fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 5 };
 
 // Auto-estimate KAST% from kills/assists/deaths/rounds
-function estimateScore(kills=0, deaths=0, assists=0, headshots=0, damage=0, won=false ) {
-  
+function estimateScore(kills = 0, deaths = 0, assists = 0, headshots = 0, damage = 0, won = false) {
+
   // const adr = damage / rounds;
   const damage_normalized = damage / 100;
   const winBonus = won ? 10 : 0;
 
   const raw = (kills * 3) + (assists * 1.5) - (deaths * 2) + (headshots * 1) + (damage_normalized * 0.5) + winBonus;
-  
+
   return Math.max(0, Number(raw.toFixed(1)));
 }
 
@@ -95,10 +94,10 @@ export default function AddMatchPage() {
   const getHeadshots = (s) => hspToHeadshots(s.kills, s.hsp);
 
   const getScore = (s) => {
-    const score  = estimateScore(s.kills, s.deaths, s.assists, getHeadshots(s), s.damage, s.won);
+    const score = estimateScore(s.kills, s.deaths, s.assists, getHeadshots(s), s.damage, s.won);
     return score;
   }
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!match.title.trim()) return toast.error("Match title is required");
@@ -160,6 +159,28 @@ export default function AddMatchPage() {
       </div>
 
       <form onSubmit={handleSubmit}>
+
+        <ImportMatch
+          existingPlayers={players}
+          onImport={(importedPlayers) => {
+            // Map imported rows to your stats format
+            const newStats = importedPlayers
+              .filter(r => r.matched)
+              .map(r => ({
+                player: r.matched._id,
+                kills: r.kills,
+                deaths: r.deaths,
+                assists: r.assists,
+                hsp: r.hsp,
+                damage: r.damage,
+                won: r.won,
+                kastMode: "auto",
+                kastManual: "",
+              }));
+            setStats(newStats);
+            toast.success(`Imported ${newStats.length} players!`);
+          }}
+        />
 
         {/* Match info */}
         <div className="card animate-slide stagger-2" style={{ padding: "20px 16px", marginBottom: 16 }}>
@@ -232,7 +253,7 @@ export default function AddMatchPage() {
             const hs = getHeadshots(stat);
             const score = getScore(stat);
 
-            
+
 
             return (
               <div key={idx} className="card" style={{ padding: "16px", marginBottom: 12 }}>
@@ -321,10 +342,10 @@ export default function AddMatchPage() {
                             {/* Rank label */}
                             <div style={{ marginTop: 4, fontSize: 10, fontFamily: "'JetBrains Mono'", color: getScoreColor(score) }}>
                               {score <= 40 ? "Bronze" :
-                              score <= 55 ? "Silver" :
-                              score <= 70 ? "Gold" :
-                              score <= 85 ? "Platinum" :
-                              score <= 100 ? "Fighter" : "Master"}
+                                score <= 55 ? "Silver" :
+                                  score <= 70 ? "Gold" :
+                                    score <= 85 ? "Platinum" :
+                                      score <= 100 ? "Fighter" : "Master"}
                             </div>
                           </div>
                         </div>
