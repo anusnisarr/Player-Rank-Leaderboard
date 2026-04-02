@@ -270,7 +270,7 @@ export default function PlayerPage() {
                 <table className="data-table" style={{ fontSize: 12 }}>
                   <thead>
                     <tr>
-                      {["Match", "Map", "Score", "K", "D", "A", "HS%", "DMG", "Result"].map(h => (
+                      {["Match", "Score", "K", "D", "A", "HS%","HEADSHOTS", "DAMAGE / 100", "Result"].map(h => (
                         <th key={h} style={{ padding: "9px 12px", color: "#7A7A8C", fontFamily: "'JetBrains Mono'", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.07em", borderBottom: "1px solid #1E1E22", whiteSpace: "nowrap" }}>{h}</th>
                       ))}
                     </tr>
@@ -282,7 +282,6 @@ export default function PlayerPage() {
                           <div style={{ fontSize: 12, color: "#E8E8F0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.title}</div>
                           <div style={{ fontSize: 10, color: "#7A7A8C", marginTop: 1 }}>{timeAgo(m.date)}</div>
                         </td>
-                        <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontSize: 11, color: "#7A7A8C", fontFamily: "'JetBrains Mono'" }}>{m.map || "—"}</td>
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
                           <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                             <ScoreDisplay score={m.score} size="sm" />
@@ -293,7 +292,8 @@ export default function PlayerPage() {
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", color: "#FF4655" }}>{m.deaths}</td>
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'" }}>{m.assists}</td>
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'" }}>{m.hsp?.toFixed(0)}%</td>
-                        <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'" }}>{m.damage}</td>
+                        <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'" }}>{m.headshots}</td>
+                        <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'" }}>{(m.damage / 100).toFixed(0)}</td>
                         <td style={{ padding: "10px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
                           <span style={{ padding: "2px 7px", borderRadius: 4, fontSize: 10, fontFamily: "'JetBrains Mono'", background: m.won ? "rgba(78,205,196,0.1)" : "rgba(255,70,85,0.1)", color: m.won ? "#4ECDC4" : "#FF4655", border: `1px solid ${m.won ? "rgba(78,205,196,0.25)" : "rgba(255,70,85,0.25)"}` }}>
                             {m.won ? "W" : "L"}
