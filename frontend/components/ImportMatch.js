@@ -31,59 +31,59 @@ function parseCSV(text) {
 }
 
 // ── Screenshot Parser (Claude Vision) ────────────────────────────────────────
-async function parseScreenshot(base64, mediaType) {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      messages: [{
-        role: "user",
-        content: [
-          {
-            type: "image",
-            source: { type: "base64", media_type: mediaType, data: base64 },
-          },
-          {
-            type: "text",
-            text: `This is a CS2 scoreboard screenshot. Extract all player stats and return ONLY a JSON array, no markdown, no explanation.
+// async function parseScreenshot(base64, mediaType) {
+//   const response = await fetch("https://api.anthropic.com/v1/messages", {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({
+//       model: "claude-sonnet-4-20250514",
+//       max_tokens: 1000,
+//       messages: [{
+//         role: "user",
+//         content: [
+//           {
+//             type: "image",
+//             source: { type: "base64", media_type: mediaType, data: base64 },
+//           },
+//           {
+//             type: "text",
+//             text: `This is a CS2 scoreboard screenshot. Extract all player stats and return ONLY a JSON array, no markdown, no explanation.
 
-Format:
-[
-  { "name": "PlayerName", "kills": 0, "deaths": 0, "assists": 0, "hsp": 0, "damage": 0, "won": true }
-]
+// Format:
+// [
+//   { "name": "PlayerName", "kills": 0, "deaths": 0, "assists": 0, "hsp": 0, "damage": 0, "won": true }
+// ]
 
-Rules:
-- hsp = headshot percentage as a number 0-100
-- damage = total damage dealt
-- won = true if their team won, false otherwise
-- If you cannot find a value use 0
-- Return ONLY the JSON array, nothing else`,
-          },
-        ],
-      }],
-    }),
-  });
+// Rules:
+// - hsp = headshot percentage as a number 0-100
+// - damage = total damage dealt
+// - won = true if their team won, false otherwise
+// - If you cannot find a value use 0
+// - Return ONLY the JSON array, nothing else`,
+//           },
+//         ],
+//       }],
+//     }),
+//   });
 
-  const data = await response.json();
-  const text = data.content?.[0]?.text || "";
+//   const data = await response.json();
+//   const text = data.content?.[0]?.text || "";
 
-  // Strip any accidental markdown fences
-  const clean = text.replace(/```json|```/g, "").trim();
-  const parsed = JSON.parse(clean);
+//   // Strip any accidental markdown fences
+//   const clean = text.replace(/```json|```/g, "").trim();
+//   const parsed = JSON.parse(clean);
 
-  if (!Array.isArray(parsed)) throw new Error("Could not parse scoreboard — try a clearer screenshot");
-  return parsed.map(p => ({
-    name:    p.name    || "Unknown",
-    kills:   Number(p.kills)   || 0,
-    deaths:  Number(p.deaths)  || 0,
-    assists: Number(p.assists) || 0,
-    hsp:     Number(p.hsp)     || 0,
-    damage:  Number(p.damage)  || 0,
-    won:     !!p.won,
-  }));
-}
+//   if (!Array.isArray(parsed)) throw new Error("Could not parse scoreboard — try a clearer screenshot");
+//   return parsed.map(p => ({
+//     name:    p.name    || "Unknown",
+//     kills:   Number(p.kills)   || 0,
+//     deaths:  Number(p.deaths)  || 0,
+//     assists: Number(p.assists) || 0,
+//     hsp:     Number(p.hsp)     || 0,
+//     damage:  Number(p.damage)  || 0,
+//     won:     !!p.won,
+//   }));
+// }
 
 // ── Main Component ────────────────────────────────────────────────────────────
 // Props:
@@ -121,19 +121,20 @@ export default function ImportMatch({ onImport, existingPlayers = [] }) {
         const text = await file.text();
         const rows = parseCSV(text);
         setPreview(rows.map(r => ({ ...r, matched: matchPlayer(r.name) })));
-      } else {
-        // Screenshot — read as base64
-        const base64 = await new Promise((res, rej) => {
-          const reader = new FileReader();
-          reader.onload  = () => res(reader.result.split(",")[1]);
-          reader.onerror = rej;
-          reader.readAsDataURL(file);
-        });
-        const mediaType = file.type || "image/png";
-        setImgSrc(`data:${mediaType};base64,${base64}`);
-        const rows = await parseScreenshot(base64, mediaType);
-        setPreview(rows.map(r => ({ ...r, matched: matchPlayer(r.name) })));
       }
+      //  else {
+      //   // Screenshot — read as base64
+      //   const base64 = await new Promise((res, rej) => {
+      //     const reader = new FileReader();
+      //     reader.onload  = () => res(reader.result.split(",")[1]);
+      //     reader.onerror = rej;
+      //     reader.readAsDataURL(file);
+      //   });
+      //   const mediaType = file.type || "image/png";
+      //   setImgSrc(`data:${mediaType};base64,${base64}`);
+      //   const rows = await parseScreenshot(base64, mediaType);
+      //   setPreview(rows.map(r => ({ ...r, matched: matchPlayer(r.name) })));
+      // }
     } catch (err) {
       setError(err.message || "Failed to parse file");
     } finally {
@@ -167,10 +168,10 @@ export default function ImportMatch({ onImport, existingPlayers = [] }) {
             style={{ padding: "8px 16px", borderRadius: 6, fontSize: 12, fontFamily: "'JetBrains Mono'", cursor: "pointer", background: "rgba(78,205,196,0.08)", color: "#4ECDC4", border: "1px solid rgba(78,205,196,0.25)" }}>
             📄 Import CSV
           </button>
-          <button onClick={() => setMode("screenshot")}
+          {/* <button onClick={() => setMode("screenshot")}
             style={{ padding: "8px 16px", borderRadius: 6, fontSize: 12, fontFamily: "'JetBrains Mono'", cursor: "pointer", background: "rgba(255,215,0,0.08)", color: "#FFD700", border: "1px solid rgba(255,215,0,0.25)" }}>
             🖼️ Import Screenshot
-          </button>
+          </button> */}
         </div>
       )}
 
@@ -215,12 +216,12 @@ export default function ImportMatch({ onImport, existingPlayers = [] }) {
                     Optional: won (true/false)
                   </div>
                 )}
-                {mode === "screenshot" && (
+                {/* {mode === "screenshot" && (
                   <div style={{ marginTop: 14, fontSize: 11, color: "#3A3A42", lineHeight: 1.7 }}>
                     Upload a CS2 end-of-match scoreboard screenshot.<br />
                     AI will extract all player stats automatically.
                   </div>
-                )}
+                )} */}
               </>
             )}
             {error && (
@@ -267,11 +268,11 @@ export default function ImportMatch({ onImport, existingPlayers = [] }) {
           </div>
 
           {/* Screenshot preview */}
-          {imgSrc && (
+          {/* {imgSrc && (
             <div style={{ padding: "10px 16px", borderBottom: "1px solid #1E1E22" }}>
               <img src={imgSrc} alt="scoreboard" style={{ width: "100%", maxHeight: 180, objectFit: "cover", borderRadius: 5, objectPosition: "top" }} />
             </div>
-          )}
+          )} */}
 
           {/* Parsed rows */}
           <div style={{ overflowX: "auto" }}>

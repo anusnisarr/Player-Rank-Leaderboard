@@ -22,6 +22,8 @@ export default function MatchesPage() {
   useEffect(() => { fetchMatches(); }, []);
 
   const handleDelete = async (id, title) => {
+    console.log(matches);
+    
     alert("You are not authorized to delete!");
   };
   // const handleDelete = async (id, title) => {
@@ -122,7 +124,7 @@ export default function MatchesPage() {
                     <table className="data-table" style={{ fontSize: 12 }}>
                       <thead>
                         <tr>
-                          {["Player", "Score", "K", "D", "A", "ADR", "Result"].map((h) => (
+                          {["Player", "Score", "Kills", "Deaths", "Assists", "HSP", "Headshots", "Damage / 100", "Result"].map((h) => (
                             <th key={h} style={{ padding: "8px 12px", color: "#7A7A8C", fontFamily: "'JetBrains Mono'", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.07em", borderBottom: "1px solid #1E1E22", whiteSpace: "nowrap" }}>{h}</th>
                           ))}
                         </tr>
@@ -141,7 +143,9 @@ export default function MatchesPage() {
                             <td style={{ padding: "9px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", color: "#4ECDC4" }}>{s.kills}</td>
                             <td style={{ padding: "9px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", color: "#FF4655" }}>{s.deaths}</td>
                             <td style={{ padding: "9px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'" }}>{s.assists}</td>
-                            <td style={{ padding: "9px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'" }}>{s.adr?.toFixed(0)}</td>
+                            <td style={{ padding: "9px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'" }}>{s.hsp}%</td>
+                            <td style={{ padding: "9px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'" }}>{s.headshots}</td>
+                            <td style={{ padding: "9px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'" }}>{(s.damage / 100).toFixed(0)}</td>
                             <td style={{ padding: "9px 12px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
                               <span style={{ padding: "2px 7px", borderRadius: 4, fontSize: 10, fontFamily: "'JetBrains Mono'", background: s.won ? "rgba(78,205,196,0.1)" : "rgba(255,70,85,0.1)", color: s.won ? "#4ECDC4" : "#FF4655", border: `1px solid ${s.won ? "rgba(78,205,196,0.25)" : "rgba(255,70,85,0.25)"}` }}>
                                 {s.won ? "W" : "L"}
