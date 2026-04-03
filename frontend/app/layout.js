@@ -3,8 +3,15 @@ import { Toaster } from "react-hot-toast";
 import Navbar from "@/components/Navbar";
 
 export const metadata = {
-  title: "CS2 RANK — Player Intelligence Platform",
-  description: "Track, rank, and analyze CS2 player performance with advanced statistics",
+  title: "CS2 Rank Tracker",
+  description: "Track your friend group CS2 stats and rankings",
+  manifest: "/manifest.webmanifest",
+  themeColor: "#FF4655",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "CS2 Ranks",
+  },
 };
 
 export const viewport = {
