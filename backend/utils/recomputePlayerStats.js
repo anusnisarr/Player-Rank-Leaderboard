@@ -4,6 +4,9 @@ import Player from "../models/player.models.js";
 // Recompute a player's career stats + score after any match change
 export const recomputePlayerStats = async (playerId) => {
 
+  const oldPlayer = await Player.findById(playerId);
+  const oldRank   = oldPlayer.rank;
+
   const matches = await Match.find({ "playerStats.player": playerId });
 
   const lastMatches = matches
@@ -80,4 +83,15 @@ for (const match of lastMatches) {
     matchesPlayed, wins, losses: matchesPlayed - wins,
     avgScore: avgScore, score:scoreSum, rank,
   });
+
+  if (rank !== oldRank) {
+  const rankOrder = ["Unranked", "Bronze", "Silver", "Gold", "Platinum", "Elite" , "Master"];
+  if (rankOrder.indexOf(rank) > rankOrder.indexOf(oldRank)) {
+    await sendPushToAll(
+      `🏆 Rank Up!`,
+      `${oldPlayer.name} just ranked up to ${rank}!`,
+
+      );
+    }
+  }
 }

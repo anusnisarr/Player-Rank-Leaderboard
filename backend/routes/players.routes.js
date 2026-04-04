@@ -1,7 +1,8 @@
 import express from "express"
 import { getAllPlayers, recomputeAllPlayersScores, getAllTeams , getSinglePlayer, createPlayer, updatePlayer, deletePlayer } from "../controllers/players.controllers.js";
-
+import { authMiddleware } from "../middleware/auth.moiddleware.js";
 const router = express.Router();
+router.use(authMiddleware);
 
 // GET all players — leaderboard
 router.get("/", getAllPlayers);

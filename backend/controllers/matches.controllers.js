@@ -1,5 +1,6 @@
 import express from "express"
 import Match from "../models/match.models.js";
+import { sendPushToAll } from "./notifications.controllers.js";
 import Player from "../models/player.models.js";
 import { recomputePlayerStats } from "../utils/recomputePlayerStats.js";
 
@@ -66,6 +67,14 @@ const createMatch = async (req, res) => {
     // Update all players' career stats
     const playerIds = [...new Set(playerStats.map(s => s.player))];
     await Promise.all(playerIds.map(recomputePlayerStats));
+
+    // 🔔 Send notification to everyone
+    await sendPushToAll(
+      "🎮 New Match Added!",
+      `${match.title} — rankings have been updated. Check the leaderboard!`,
+      "/"
+    );
+
 
     const populated = await match.populate("playerStats.player", "name team avatar");
     res.status(201).json({ success: true, data: populated });
