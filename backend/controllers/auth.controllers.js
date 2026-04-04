@@ -9,7 +9,7 @@ export const registerUser = async (req, res) => {
 
     const isUsernameTaken = await User.findOne({ username });
     if (isUsernameTaken) {
-      return res.status(400).json({ success: false, error: "Player name already exists" });
+      return res.status(400).json({ success: false, error: "username already exists" });
     }
 
     const isEmailTaken = await User.findOne({ email });

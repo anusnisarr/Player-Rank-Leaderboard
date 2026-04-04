@@ -1,5 +1,6 @@
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import PushNotifications from "@/components/PushNotifications";
 
 export const metadata = {
   title: "RANKIFY",
@@ -29,6 +30,7 @@ export default function RootLayout({ children }) {
         <div className="min-h-screen flex flex-col">
           <main className="flex-1">{children}</main>
         </div>
+        <PushNotifications />
         <Toaster
           position="bottom-center"
           toastOptions={{
