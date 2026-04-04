@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
 export const registerUser = async (req, res) => {
+    console.log(req.body)
     const { username, email, password } = req.body;
 
   try {
@@ -19,7 +20,8 @@ export const registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({ username, email, hashedPassword });
+
+    const user = await User.create({ username, email, password:hashedPassword });
     const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
     res.cookie("accessToken", accessToken, { httpOnly: true, secure: false, sameSite: "strict", maxAge: 7 * 24 * 60 * 60 * 1000 });
