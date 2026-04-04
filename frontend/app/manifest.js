@@ -1,6 +1,6 @@
 export default function manifest() {
   return {
-    name: "CS2 Rank Tracker",
+    name: "RANKIFY",
     short_name: "CS2 Ranks",
     description: "Track your friend group CS2 stats and rankings",
     start_url: "/",

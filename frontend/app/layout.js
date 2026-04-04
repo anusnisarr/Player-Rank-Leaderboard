@@ -2,8 +2,8 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 
 export const metadata = {
-  title: "CS2 Rank Tracker",
-  description: "Track your friend group CS2 stats and rankings",
+  title: "RANKIFY",
+  description: "Track your friend group stats and rankings",
   manifest: "/manifest.webmanifest",
   themeColor: "#FF4655",
   appleWebApp: {
