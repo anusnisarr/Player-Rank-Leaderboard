@@ -5,6 +5,7 @@ import { authMiddleware } from "../middleware/auth.moiddleware.js";
 
 const router = express.Router();
 router.use(authMiddleware);
+
 //matches GET all
 router.get("/", getAllMatches);
 

@@ -1,5 +1,7 @@
-import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import Navbar from "@/components/Navbar";
+import PushNotifications from "@/components/PushNotifications";
+
 
 export const metadata = {
   title: "CS2 Rank Tracker",
@@ -27,6 +29,8 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <div className="min-h-screen flex flex-col">
+          <Navbar />
+          <PushNotifications />
           <main className="flex-1">{children}</main>
         </div>
         <Toaster

@@ -16,8 +16,6 @@ export default function PlayerPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("overview");
 
-
-
   useEffect(() => {
     if (!id) return;
     getPlayer(id).then(r => setPlayer(r.data.data)).catch(() => toast.error("Player not found")).finally(() => setLoading(false));
