@@ -77,16 +77,9 @@ export default function LoginPage() {
 
         {/* Logo / Brand */}
         <div style={{ textAlign: "center", marginBottom: 40 }}>
-          {/* Crosshair icon */}
-          <div style={{ position: "relative", width: 56, height: 56, margin: "0 auto 16px" }}>
-            <div style={{ position: "absolute", inset: 0, border: "1.5px solid rgba(255,70,85,0.5)", borderRadius: "50%" }} />
-            <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1, background: "rgba(255,70,85,0.5)", transform: "translateY(-50%)" }} />
-            <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, background: "rgba(255,70,85,0.5)", transform: "translateX(-50%)" }} />
-            <div style={{ position: "absolute", top: "50%", left: "50%", width: 6, height: 6, borderRadius: "50%", background: "#FF4655", transform: "translate(-50%, -50%)" }} />
-          </div>
           <h1 style={{
             fontFamily: "'Bebas Neue', cursive",
-            fontSize: "clamp(28px, 6vw, 38px)",
+            fontSize: "clamp(28px, 6vw, 48px)",
             letterSpacing: "0.12em", color: "#E8E8F0", lineHeight: 1, margin: 0,
           }}>
            RANKIFY
