@@ -3,13 +3,13 @@ import { Toaster } from "react-hot-toast";
 
 export const metadata = {
   title: "RANKIFY",
-  description: "Track your friend group stats and rankings",
+  description: "Track your game stats and rankings",
   manifest: "/manifest.webmanifest",
   themeColor: "#FF4655",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "CS2 Ranks",
+    title: "RANKIFY",
   },
 };
 

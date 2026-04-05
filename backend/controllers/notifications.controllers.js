@@ -54,7 +54,7 @@ export const sendPushToAll = async (title, body, url = "/") => {
 export const testNotification = async (req, res) => {
     try {
     await sendPushToAll(
-      "🧪 Test Notification",
+      "Test Notification",
       "Push notifications are working!",
       "/"
     );

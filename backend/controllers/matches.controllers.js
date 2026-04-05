@@ -1,6 +1,6 @@
 import express from "express"
 import Match from "../models/match.models.js";
-import { sendPushToAll } from "./notifications.controllers.js";
+import { sendPushToAll } from "../controllers/notifications.controllers.js";
 import Player from "../models/player.models.js";
 import { recomputePlayerStats } from "../utils/recomputePlayerStats.js";
 
