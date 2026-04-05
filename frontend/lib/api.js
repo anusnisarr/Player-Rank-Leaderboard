@@ -3,12 +3,13 @@ import axios from "axios";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 const api = axios.create({
-  baseURL: "/api",  // ← now hits your own frontend domain
+  baseURL: "/backend",
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
 
 // Attach token from cookie to every request
+
 // api.interceptors.request.use((config) => {
 //   if (typeof document !== "undefined") {
 //     const token = document.cookie
