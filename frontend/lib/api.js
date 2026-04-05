@@ -3,24 +3,24 @@ import axios from "axios";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 const api = axios.create({
-  baseURL: "/backend",
+  baseURL: API_URL,
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
 
 // Attach token from cookie to every request
 
-// api.interceptors.request.use((config) => {
-//   if (typeof document !== "undefined") {
-//     const token = document.cookie
-//       .split("; ")
-//       .find(r => r.startsWith("accessToken="))
-//       ?.split("=")[1];
+api.interceptors.request.use((config) => {
+  if (typeof document !== "undefined") {
+    const token = document.cookie
+      .split("; ")
+      .find(r => r.startsWith("accessToken="))
+      ?.split("=")[1];
 
-//     if (token) config.headers.Authorization = `Bearer ${token}`;
-//   }
-//   return config;
-// });
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 // Players
 export const getPlayers = (params = {}) => api.get("/players", { params });

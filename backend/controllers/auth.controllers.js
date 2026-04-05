@@ -23,14 +23,14 @@ export const registerUser = async (req, res) => {
     const user = await User.create({ username, email, password:hashedPassword });
     const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",  // lax works now since same domain
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    // res.cookie("accessToken", accessToken, {
+    //   httpOnly: true,
+    //   secure: true,
+    //   sameSite: "lax",  // lax works now since same domain
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,
+    // });
 
-    res.status(201).json({ success: true, message: "User Register Successfully!",ata: user});
+    res.status(201).json({ success: true, message: "User Register Successfully!", data: user, token : accessToken });
 
   } catch (err) {
     if (err.code === 11000) return res.status(400).json({ success: false, error: "Player name already exists" });
@@ -61,14 +61,14 @@ export const loginUser = async (req, res) => {
 
     const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",  // lax works now since same domain
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    // res.cookie("accessToken", accessToken, {
+    //   httpOnly: true,
+    //   secure: true,
+    //   sameSite: "lax",  // lax works now since same domain
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,
+    // });
 
-    res.status(200).json({ success: true, message: "Login successful", data: user });
+    res.status(200).json({ success: true, message: "Login successful", data: user, token : accessToken });
 
   } catch (err) {
     console.error("Login error:", err);
