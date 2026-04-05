@@ -27,7 +27,7 @@ export default function Navbar() {
                 <path d="M8 5L11 7V10L8 12L5 10V7L8 5Z" fill="white" />
               </svg>
             </div>
-            <span style={{ fontFamily: "'Bebas Neue', cursive", fontSize: 20, letterSpacing: "0.06em", color: "#E8E8F0" }}>CS2 RANK</span>
+            <span style={{ fontFamily: "'Bebas Neue', cursive", fontSize: 20, letterSpacing: "0.06em", color: "#E8E8F0" }}>RANKIFY</span>
           </Link>
 
           {/* Desktop nav */}
