@@ -2,26 +2,25 @@ import express from "express"
 import { getAllPlayers, recomputeAllPlayersScores, getAllTeams , getSinglePlayer, createPlayer, updatePlayer, deletePlayer } from "../controllers/players.controllers.js";
 import { authMiddleware } from "../middleware/auth.moiddleware.js";
 const router = express.Router();
-router.use(authMiddleware);
 
 // GET all players — leaderboard
-router.get("/", getAllPlayers);
+router.get("/", authMiddleware, getAllPlayers);
 
-router.get("/teams", getAllTeams);
+router.get("/teams", authMiddleware, getAllTeams);
 
 // GET all players Ids
 router.get("/recomputeAllScores", recomputeAllPlayersScores);
 
 // GET single player + match history
-router.get("/:id", getSinglePlayer);
+router.get("/:id", authMiddleware, getSinglePlayer);
 
 // POST create player
-router.post("/", createPlayer);
+router.post("/", authMiddleware, createPlayer);
 
 // PUT update player info
-router.put("/:id", updatePlayer);
+router.put("/:id", authMiddleware, updatePlayer);
 
 // DELETE player
-router.delete("/:id", deletePlayer);
+router.delete("/:id", authMiddleware,deletePlayer);
 
 export default router;
