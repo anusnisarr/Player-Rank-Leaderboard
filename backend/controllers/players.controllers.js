@@ -59,7 +59,6 @@ export const recomputeAllPlayersScores = async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
-
 };
 
 // GET single player + match history
