@@ -1,5 +1,6 @@
 "use client";
 import { RANK_CONFIG, RANK_ORDER, getScoreColor } from "@/lib/utils";
+import TestButton from "@/components/testButton";
 
 export default function scoreSytem() {
 
@@ -46,6 +47,7 @@ export default function scoreSytem() {
           </span> */}
         </div>
 
+        <TestButton />
         {/* Formula Section */}
         <div style={{
           display: "flex",
