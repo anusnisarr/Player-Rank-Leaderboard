@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import api from "@/lib/api";
 
 
 export default function RegisterPage() {
@@ -35,16 +36,9 @@ export default function RegisterPage() {
     if (form.password.length < 6) return setError("Password must be at least 6 characters");
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
-        method:      "POST",
-        headers:     { "Content-Type": "application/json" },
-        credentials: "include",
-        body:        JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || "Registration failed");
+      const res = await api.post(`/auth/register`, form);
+      if (!res.data.success) throw new Error(res.data.error || "Registration failed");
       router.push("/");
-      router.refresh();
     } catch (err) {
       setError(err.message);
     } finally {
