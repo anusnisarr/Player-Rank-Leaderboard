@@ -38,7 +38,12 @@ export default function RegisterPage() {
     try {
       const res = await api.post(`/auth/register`, form);
       if (!res.data.success) throw new Error(res.data.error || "Registration failed");
-      router.push("/");
+      const maxAge = 7 * 24 * 60 * 60;
+      document.cookie = `accessToken=${res.data.token}; path=/; max-age=${maxAge}; SameSite=Lax`;
+
+      // router.replace("/");
+      // router.refresh();
+      window.location.href = "/";
     } catch (err) {
       setError(err.message);
     } finally {
