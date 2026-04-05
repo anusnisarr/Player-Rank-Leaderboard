@@ -23,7 +23,12 @@ export const registerUser = async (req, res) => {
     const user = await User.create({ username, email, password:hashedPassword });
     const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-    res.cookie("accessToken", accessToken, { httpOnly: true, secure: true, sameSite: "strict", maxAge: 7 * 24 * 60 * 60 * 1000 });
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",  // ← change from "strict" to "none"
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
     res.status(201).json({ success: true, data: user });
 
   } catch (err) {

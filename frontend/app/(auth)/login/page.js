@@ -24,8 +24,9 @@ export default function LoginPage() {
     try {
       const res = await api.post(`/auth/login`, form);
       if (!res.data.success) throw new Error(res.data.error || "Login failed");
-      router.replace("/");
-      router.refresh();
+      // router.replace("/");
+      // router.refresh();
+      window.location.href = "/";
     } catch (err) {
       setError(err.message);
     } finally {
