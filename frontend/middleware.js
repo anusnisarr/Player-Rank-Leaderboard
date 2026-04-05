@@ -2,14 +2,15 @@ import { NextResponse } from "next/server";
 
 export function middleware(request) {
   const token = request.cookies.get("accessToken")?.value;
+  const { pathname } = request.nextUrl;
 
-  const isLoginPage = request.nextUrl.pathname === "/login";
+  const isAuthPage = pathname === "/login" || pathname === "/register";
 
-  if (!token && !isLoginPage) {
+  if (!token && !isAuthPage) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (token && isLoginPage) {
+  if (token && isAuthPage) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
@@ -17,5 +18,7 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/((?!_next|register|favicon.ico|serviceWorker.js).*)"],
+  matcher: [
+    "/((?!_next|favicon.ico|serviceWorker.js|api).*)",
+  ],
 };
