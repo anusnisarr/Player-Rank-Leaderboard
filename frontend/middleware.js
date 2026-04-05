@@ -17,5 +17,5 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/((?!_next|register|favicon.ico).*)"],
+  matcher: ["/((?!_next|register|favicon.ico|serviceWorker.js).*)"],
 };
