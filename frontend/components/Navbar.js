@@ -5,11 +5,12 @@ import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/", label: "Leaderboard", icon: "🏆" },
-  { href:"/teams", label: "Teams" },
+  { href:"/teams", label: "Teams", icon: "👥" },
   { href: "/add-match", label: "Add Match", icon: "➕" },
   { href: "/add-player", label: "Add Player", icon: "👤" },
   { href: "/matches", label: "Match History", icon: "📋" },
-  { href: "/score-system", label: "Score System"},
+  { href: "/score-system", label: "Score System", icon: "📊" },
+  { href: "/notify", label: "Notify", icon: "📣" }
 ];
 
 export default function Navbar() {

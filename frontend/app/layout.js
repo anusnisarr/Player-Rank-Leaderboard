@@ -5,7 +5,6 @@ export const metadata = {
   title: "RANKIFY",
   description: "Track your game stats and rankings",
   manifest: "/manifest.webmanifest",
-  themeColor: "#FF4655",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -17,6 +16,7 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  themeColor: "#FF4655",
 };
 
 export default function RootLayout({ children }) {
