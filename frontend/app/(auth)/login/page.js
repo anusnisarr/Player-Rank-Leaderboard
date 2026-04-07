@@ -23,7 +23,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await api.post(`/auth/login`, form);
-      if (!res.data.success) throw new Error(res.data.error || "Login failed");
+      if (!res.data.success) throw new Error(res.data.message || "Login failed");
       // Set cookie on frontend domain — survives full reload
       const maxAge = 7 * 24 * 60 * 60;
       document.cookie = `accessToken=${res.data.token}; path=/; max-age=${maxAge}; SameSite=Lax`;
@@ -32,7 +32,8 @@ export default function LoginPage() {
       // router.replace("/");
       // router.refresh();
     } catch (err) {
-      setError(err.message);
+      console.log("Registration error:", err.response.data || err.message);
+      setError(err.response.data.message || err.message);
     } finally {
       setLoading(false);
     }

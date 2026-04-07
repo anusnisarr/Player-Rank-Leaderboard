@@ -9,12 +9,12 @@ export const registerUser = async (req, res) => {
 
     const isUsernameTaken = await User.findOne({ username });
     if (isUsernameTaken) {
-      return res.status(400).json({ success: false, error: "username already exists" });
+      return res.status(400).json({ success: false, message: "username already exists" });
     }
 
     const isEmailTaken = await User.findOne({ email });
     if (isEmailTaken) {
-      return res.status(400).json({ success: false, error: "Email already in use" });
+      return res.status(400).json({ success: false, message: "Email already in use" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -33,8 +33,8 @@ export const registerUser = async (req, res) => {
     res.status(201).json({ success: true, message: "User Register Successfully!", data: user, token : accessToken });
 
   } catch (err) {
-    if (err.code === 11000) return res.status(400).json({ success: false, error: "Player name already exists" });
-    res.status(400).json({ success: false, error: err.message });
+    console.log("Registration error:", err);
+    res.status(400).json({ success: false, message: err.message });
   }
 };
 

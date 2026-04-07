@@ -42,10 +42,12 @@ export default function RegisterPage() {
       document.cookie = `accessToken=${res.data.token}; path=/; max-age=${maxAge}; SameSite=Lax`;
       window.location.href = "/";
 
-      // router.replace("/");
-      // router.refresh();
+      // router.replace("/"); 
+      // router.refresh(); 
+
     } catch (err) {
-      setError(err.message);
+      console.log("Registration error:", err.response.data || err.message);
+      setError(err.response.data.message || err.message);
     } finally {
       setLoading(false);
     }
