@@ -51,6 +51,16 @@ export const sendPushToAll = async (title, body, url = "/") => {
   });
 }
 
+export const sendNotification = async (req, res) => {
+  const { title, body, url } = req.body;
+  try {
+    await sendPushToAll(title, body, url);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+}
+
 export const testNotification = async (req, res) => {
     try {
     await sendPushToAll(
