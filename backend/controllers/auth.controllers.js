@@ -26,7 +26,7 @@ export const registerUser = async (req, res) => {
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",  // lax works now since same domain
+      sameSite: "none",  // lax works now since same domain
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -64,7 +64,7 @@ export const loginUser = async (req, res) => {
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",  // lax works now since same domain
+      sameSite: "none",  // lax works now since same domain
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
