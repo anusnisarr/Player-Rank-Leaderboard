@@ -25,8 +25,8 @@ export default function LoginPage() {
       const res = await api.post(`/auth/login`, form);
       if (!res.data.success) throw new Error(res.data.message || "Login failed");
       // Set cookie on frontend domain — survives full reload
-      const maxAge = 7 * 24 * 60 * 60;
-      document.cookie = `accessToken=${res.data.token}; path=/; max-age=${maxAge}; SameSite=Lax`;
+      // const maxAge = 7 * 24 * 60 * 60;
+      // document.cookie = `accessToken=${res.data.token}; path=/; max-age=${maxAge}; SameSite=Lax`;
       window.location.href = "/";
 
       // router.replace("/");

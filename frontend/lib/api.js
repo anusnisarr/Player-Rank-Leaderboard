@@ -10,17 +10,17 @@ const api = axios.create({
 
 // Attach token from cookie to every request
 
-api.interceptors.request.use((config) => {
-  if (typeof document !== "undefined") {
-    const token = document.cookie
-      .split("; ")
-      .find(r => r.startsWith("accessToken="))
-      ?.split("=")[1];
+// api.interceptors.request.use((config) => {
+//   if (typeof document !== "undefined") {
+//     const token = document.cookie
+//       .split("; ")
+//       .find(r => r.startsWith("accessToken="))
+//       ?.split("=")[1];
 
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+//     if (token) config.headers.Authorization = `Bearer ${token}`;
+//   }
+//   return config;
+// });
 
 // Players
 export const getPlayers = (params = {}) => api.get("/players", { params });
