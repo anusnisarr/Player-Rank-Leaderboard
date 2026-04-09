@@ -27,10 +27,10 @@ export default function LoginPage() {
       // Set cookie on frontend domain — survives full reload
       // const maxAge = 7 * 24 * 60 * 60;
       // document.cookie = `accessToken=${res.data.token}; path=/; max-age=${maxAge}; SameSite=Lax`;
-      window.location.href = "/";
+      // window.location.href = "/";
 
-      // router.replace("/");
-      // router.refresh();
+      router.replace("/");
+      router.refresh();
     } catch (err) {
       console.log("Registration error:", err.response.data || err.message);
       setError(err.response.data.message || err.message);
