@@ -10,7 +10,8 @@ const links = [
   { href: "/add-player", label: "Add Player", icon: "👤" },
   { href: "/matches", label: "Match History", icon: "📋" },
   { href: "/score-system", label: "Score System", icon: "📊" },
-  { href: "/notify", label: "Notify", icon: "📣" }
+  { href: "/notify", label: "Notify", icon: "📣" },
+  { href: "/achievements", label: "Achievements", icon: "🏆" }
 ];
 
 export default function Navbar() {
