@@ -2,6 +2,9 @@ import User from "../models/auth.models.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
+const isProduction = process.env.NODE_ENV === "production";
+
+
 export const registerUser = async (req, res) => {
     const { username, email, password } = req.body;
 
@@ -25,10 +28,10 @@ export const registerUser = async (req, res) => {
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",  // lax works now since same domain
-      domain:   ".rankify.website",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      secure:   isProduction,           // false on local (http), true on production (https)
+      sameSite: isProduction ? "none" : "lax",  // lax works on local same-origin
+      domain:   isProduction ? ".rankify.website" : undefined, // no domain restriction on local
+      maxAge:   7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(201).json({ success: true, message: "User Register Successfully!", data: user});
@@ -64,10 +67,10 @@ export const loginUser = async (req, res) => {
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",  // lax works now since same domain
-      domain:   ".rankify.website",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      secure:   isProduction,           // false on local (http), true on production (https)
+      sameSite: isProduction ? "none" : "lax",  // lax works on local same-origin
+      domain:   isProduction ? ".rankify.website" : undefined, // no domain restriction on local
+      maxAge:   7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(200).json({ success: true, message: "Login successful", data: user });
