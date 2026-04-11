@@ -17,6 +17,7 @@ const playerSchema = new mongoose.Schema(
     matchesPlayed:  { type: Number, default: 0 },
     wins:           { type: Number, default: 0 },
     losses:         { type: Number, default: 0 },
+    playground:     [{ type: mongoose.Schema.Types.ObjectId, ref: "Playground" }],
 
     // Simple computed score (0-100) and rank label
     score: { type: Number, default: 0 },

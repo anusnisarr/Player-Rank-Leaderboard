@@ -24,6 +24,7 @@ const api = axios.create({
 
 // Players
 export const getPlayers = (params = {}) => api.get("/players", { params });
+export const getPlaygroundStats = (id) => api.get(`/players/${id}/playground-stats`);
 export const getTeams = () => api.get("/players/teams");
 export const getPlayer = (id) => api.get(`/players/${id}`);
 export const createPlayer = (data) => api.post("/players", data);

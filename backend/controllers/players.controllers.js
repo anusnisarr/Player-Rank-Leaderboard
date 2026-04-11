@@ -8,6 +8,7 @@ export const getAllPlayers = async (req, res) => {
   try {
     const { sort = "avgScore", order = "desc", rank, team } = req.query;
     const filter = {};
+    if (req.query.playground) filter.playground = req.query.playground;
     if (rank) filter.rank = rank;
     if (team) filter.team = new RegExp(team, "i");
 
@@ -119,6 +120,32 @@ export const deletePlayer = async (req, res) => {
     const player = await Player.findByIdAndDelete(req.params.id);
     if (!player) return res.status(404).json({ success: false, error: "Player not found" });
     res.json({ success: true, message: "Player deleted" });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// GET /api/players/:id/playground-stats
+export const getPlaygroundStats = async (req, res) => {
+  try {
+    const stats = await PlayerStats.find({ player: req.params.id })
+      .populate("playground", "name code")
+      .sort({ score: -1 });
+
+    res.json({ success: true, data: stats.map(s => ({
+      playground: { _id: s.playground._id, name: s.playground.name, code: s.playground.code },
+      score:        s.score,
+      rank:         s.rank,
+      kd:           s.kd,
+      hsp:          s.hsp,
+      totalKills:   s.totalKills,
+      totalDeaths:  s.totalDeaths,
+      totalAssists: s.totalAssists,
+      matchesPlayed: s.matchesPlayed,
+      wins:         s.wins,
+      losses:       s.losses,
+      winRate:      s.winRate,
+    }))});
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

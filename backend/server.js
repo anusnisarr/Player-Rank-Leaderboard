@@ -10,6 +10,7 @@ import matchRoutes from "./routes/matches.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import rawRouter from "./routes/raw.routes.js";
 import notificationsRouter from "./routes/notifications.routes.js";
+import playgroundRoutes from "./routes/playground.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +21,7 @@ app.use(cors({ origin: process.env.FRONTEND_URL , credentials: true}));
 app.use(cookieParser());
 
 //api routes
+app.use("/api/playgrounds", playgroundRoutes);
 app.use("/api/notifications", notificationsRouter);
 app.use("/api/players", playerRoutes);
 app.use("/api/matches", matchRoutes);

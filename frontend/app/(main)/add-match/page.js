@@ -5,6 +5,9 @@ import { getPlayers, createMatch } from "@/lib/api";
 import { MAPS, getScoreColor } from "@/lib/utils";
 import ImportMatch from "@/components/ImportMatch.js";
 import toast from "react-hot-toast";
+import { useSearchParams } from "next/navigation";
+
+
 
 const EMPTY_STAT = {
   player: "", kills: "", deaths: "", assists: "",
@@ -67,6 +70,8 @@ function StatBox({ label, value, onChange, max, step = "1", suffix = "" }) {
 
 export default function AddMatchPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const playgroundId = searchParams.get("playground");
   const [players, setPlayers] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [match, setMatch] = useState({
@@ -117,6 +122,7 @@ export default function AddMatchPage() {
       const rounds = Number(match.totalRounds);
       await createMatch({
         ...match,
+        playground: playgroundId,
         totalRounds: rounds,
         scoreA: Number(match.scoreA) || 0,
         scoreB: Number(match.scoreB) || 0,

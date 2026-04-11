@@ -28,6 +28,7 @@ const matchSchema = new mongoose.Schema(
     totalRounds: { type: Number, required: true, min: 1 },
     playerStats: [matchStatSchema],
     notes:       { type: String, default: "" },
+    playground:  { type: mongoose.Schema.Types.ObjectId, ref: "Playground" }
   },
   { timestamps: true }
 );

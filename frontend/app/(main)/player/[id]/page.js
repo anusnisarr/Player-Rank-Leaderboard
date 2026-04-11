@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getPlayer, deletePlayer } from "@/lib/api";
+import { getPlayer, deletePlayer ,getPlaygroundStats } from "@/lib/api";
 import { RANK_CONFIG, RANK_ORDER, getScoreColor, timeAgo } from "@/lib/utils";
 import { RankBadge, ScoreDisplay, ScoreBar, PlayerAvatar } from "@/components/UI";
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
@@ -13,14 +13,14 @@ export default function PlayerPage() {
   const { id } = useParams();
   const router = useRouter();
   const [player, setPlayer] = useState(null);
+  const [pgStats, setPgStats] = useState([]);  
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("overview");
-
+  
   useEffect(() => {
     if (!id) return;
     getPlayer(id).then(r => setPlayer(r.data.data)).catch(() => toast.error("Player not found")).finally(() => setLoading(false));
-    
-    
+    getPlaygroundStats(id).then(r => setPgStats(r.data.data)).catch(() => toast.error("Failed to fetch playground stats"));
   }, [id]);
 
   if (loading) return <div style={{ maxWidth: 900, margin: "0 auto", padding: "80px 16px", textAlign: "center", color: "#7A7A8C" }}>Loading...</div>;
@@ -115,6 +115,7 @@ export default function PlayerPage() {
  
           <div style={{ textAlign: "right", flexShrink: 0 }}>
             <ScoreDisplay score={player.score} size="xl" />
+            <ScoreDisplay score={player.score} size="md" />
             <div style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 2 }}>
               Performance Score
             </div>
@@ -156,6 +157,44 @@ export default function PlayerPage() {
         </div>
       </div>
       </div>
+
+      {pgStats.length > 0 && (
+  <div style={{ marginTop: 14 }}>
+    <div style={{ fontSize: 10, color: "#3A3A42", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+      Per Playground Stats
+    </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {pgStats.map(s => {
+        const rc = RANK_COLORS[s.rank] || "#6C757D";
+        return (
+          <div key={s.playground._id} style={{ background: "#0A0A0B", border: "1px solid #1E1E22", borderRadius: 8, padding: "12px 14px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#E8E8F0" }}>{s.playground.name}</div>
+              <div style={{ fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", letterSpacing: "0.06em" }}>{s.playground.code}</div>
+            </div>
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+              {[
+                { label: "Score", val: s.score, color: rc },
+                { label: "K/D",   val: s.kd },
+                { label: "Kills", val: s.totalKills, color: "#4ECDC4" },
+                { label: "HS%",   val: `${s.hsp}%`, color: "#FFD700" },
+                { label: "W/L",   val: `${s.wins}/${s.losses}` },
+              ].map(({ label, val, color }) => (
+                <div key={label} style={{ textAlign: "center" }}>
+                  <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 14, fontWeight: 600, color: color || "#E8E8F0" }}>{val}</div>
+                  <div style={{ fontSize: 9, color: "#7A7A8C", textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "'JetBrains Mono'", marginTop: 2 }}>{label}</div>
+                </div>
+              ))}
+            </div>
+            <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 5, background: `${rc}15`, color: rc, border: `1px solid ${rc}25`, fontWeight: 600, flexShrink: 0 }}>
+              {RANK_ICONS[s.rank]} {s.rank}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
 
       {/* ── Tabs ── */}
       <div style={{ display: "flex", gap: 4, marginBottom: 16, justifyContent: "space-between", alignItems: "center" }}>

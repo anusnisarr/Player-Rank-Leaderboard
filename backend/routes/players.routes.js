@@ -1,5 +1,5 @@
 import express from "express"
-import { getAllPlayers, recomputeAllPlayersScores, getAllTeams , getSinglePlayer, createPlayer, updatePlayer, deletePlayer } from "../controllers/players.controllers.js";
+import {getPlaygroundStats, getAllPlayers, recomputeAllPlayersScores, getAllTeams , getSinglePlayer, createPlayer, updatePlayer, deletePlayer } from "../controllers/players.controllers.js";
 import { authMiddleware } from "../middleware/auth.moiddleware.js";
 const router = express.Router();
 
@@ -22,5 +22,7 @@ router.put("/:id", authMiddleware, updatePlayer);
 
 // DELETE player
 router.delete("/:id", authMiddleware,deletePlayer);
+
+router.get("/:id/playground-stats", authMiddleware, getPlaygroundStats);
 
 export default router;

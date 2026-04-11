@@ -1,18 +1,20 @@
-import express from "express"
 import Match from "../models/match.models.js";
-import { sendPushToAll } from "../controllers/notifications.controllers.js";
 import Player from "../models/player.models.js";
+import { sendPushToAll } from "../controllers/notifications.controllers.js";
 import { recomputePlayerStats } from "../utils/recomputePlayerStats.js";
+import { recomputePlaygroundStats } from "../controllers/playground.controllers.js";
 
 // GET all matches
 const getAllMatches = async (req, res) => {
   try {
+    const filter = {};
+    if (req.query.playground) filter.playground = req.query.playground;
     const { limit = 30, page = 1 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
     const [matches, total] = await Promise.all([
-      Match.find().sort({ date: -1 }).skip(skip).limit(Number(limit))
+      Match.find(filter).sort({ date: -1 }).skip(skip).limit(Number(limit))
         .populate("playerStats.player", "name team"),
-      Match.countDocuments(),
+      Match.countDocuments(filter),
     ]);
     res.json({ success: true, data: matches, total });
   } catch (err) {
@@ -36,7 +38,7 @@ const getSingleMatch = async (req, res) => {
 const createMatch = async (req, res) => {
 
   try {
-    const { title, map, date, teamA, teamB, scoreA, scoreB, totalRounds, playerStats, notes } = req.body;
+    const { title, map, date, teamA, teamB, scoreA, scoreB, totalRounds, playerStats, notes , playground } = req.body;
 
     if (!playerStats || playerStats.length === 0)
       return res.status(400).json({ success: false, error: "At least one player stat required" });
@@ -62,11 +64,11 @@ const createMatch = async (req, res) => {
 
     });
 
-    const match = await Match.create({ title, map, date, teamA, teamB, scoreA, scoreB, totalRounds, playerStats: enriched, notes });
+    const match = await Match.create({ title, map, date, teamA, teamB, scoreA, scoreB, totalRounds, playerStats: enriched, notes , playground });
 
     // Update all players' career stats
     const playerIds = [...new Set(playerStats.map(s => s.player))];
-    await Promise.all(playerIds.map(recomputePlayerStats));
+    await Promise.all(playerIds.map(playground ? recomputePlaygroundStats : recomputePlayerStats));
 
     // 🔔 Send notification to everyone
     await sendPushToAll(
