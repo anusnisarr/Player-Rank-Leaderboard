@@ -43,6 +43,7 @@ function computeRank(score) {
 
 // ── POST /api/playgrounds — Create ───────────────────────────────────────────
 export const createPlayground = async (req, res) => {
+  console.log("Creating playground with data:", req.user);
   try {
     const { name, password, description } = req.body;
     if (!name?.trim()) return res.status(400).json({ success: false, error: "Name is required" });

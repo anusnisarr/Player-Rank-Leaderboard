@@ -176,9 +176,16 @@ export default function Navbar() {
       {/* ── Mobile menu ── */}
       {menuOpen && (
         <div className="mobile-nav" style={{
-          position: "fixed", top: 56, left: 0, right: 0, bottom: 0,
-          background: "rgba(8,8,9,0.98)", zIndex: 99,
-          display: "flex", flexDirection: "column", padding: "16px",
+          position: "fixed",
+          top: 56,
+          left: 0,
+          width: "100%",
+          height: "calc(100dvh - 56px)", // ✅ key fix
+          background: "rgba(8,8,9,0.98)",
+          zIndex: 99,
+          display: "flex",
+          flexDirection: "column",
+          padding: "20px",
           overflowY: "auto",
         }}>
           {navLinks.map(({ href, label }) => (
