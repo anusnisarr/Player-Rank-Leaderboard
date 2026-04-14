@@ -42,6 +42,8 @@ export const getAllPlayers = async (req, res) => {
 // GET all Team
 export const getAllTeams = async (req, res) => {
   try {
+    const filter = {};
+    if (req.query.playground) filter.playground = req.query.playground;
     const players = await Player.find().distinct("team");
 
     res.json({ success: true, data: players });

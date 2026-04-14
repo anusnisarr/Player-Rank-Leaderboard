@@ -1,13 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { getPlayers, getPlayer } from "@/lib/api";
+// import { getPlayers, getPlayer } from "@/lib/api";
+import { usePlaygroundApi } from "@/lib/usePlaygroundApi";
 import { computeAchievements, achievementStats, ACHIEVEMENTS, RARITY_CONFIG } from "@/lib/achievements";
 import { AchievementCard, AchievementSummary, AchievementsGrid } from "@/components/Achievements";
 import { PlayerAvatar, RankBadge } from "@/components/UI";
 import toast from "react-hot-toast";
 
 export default function AchievementsPage() {
+  const { getPlayers , getPlayer, active } = usePlaygroundApi();
   const [players, setPlayers]   = useState([]);
   const [selected, setSelected] = useState(null); // player with full data
   const [loading, setLoading]   = useState(true);
@@ -20,7 +22,7 @@ export default function AchievementsPage() {
       // Auto-select first player
       if (r.data.data.length > 0) selectPlayer(r.data.data[0]._id);
     }).catch(() => toast.error("Failed to load")).finally(() => setLoading(false));
-  }, []);
+  }, [active]);
 
   const selectPlayer = async (id) => {
     setLoadingP(true);

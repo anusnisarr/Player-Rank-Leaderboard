@@ -1,12 +1,14 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { getPlayers ,getTeams } from "@/lib/api";
+import { getTeams } from "@/lib/api";
+import { usePlaygroundApi } from "@/lib/usePlaygroundApi";
 import { RANK_CONFIG, RANK_ORDER, getScoreColor } from "@/lib/utils";
 import { RankBadge, ScoreDisplay, ScoreBar, PlayerAvatar, RankNum, EmptyState, FilterBtn, Skeleton } from "@/components/UI";
 import toast from "react-hot-toast";
 
 export default function LeaderboardPage() {
+  const { getPlayers , active } = usePlaygroundApi();
   const [players, setPlayers] = useState([]);
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +39,7 @@ export default function LeaderboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [teamFilter, rankFilter, sortField, sortOrder]);
+  }, [active , teamFilter, rankFilter, sortField, sortOrder]);
 
   const fetchTeams = useCallback(async () => {
     try {

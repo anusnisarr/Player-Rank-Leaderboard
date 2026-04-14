@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getPlayers, createMatch } from "@/lib/api";
+// import { getPlayers, createMatch } from "@/lib/api";
+import { usePlaygroundApi } from "@/lib/usePlaygroundApi";
 import { MAPS, getScoreColor } from "@/lib/utils";
 import ImportMatch from "@/components/ImportMatch.js";
 import toast from "react-hot-toast";
@@ -69,6 +70,7 @@ function StatBox({ label, value, onChange, max, step = "1", suffix = "" }) {
 }
 
 export default function AddMatchPage() {
+  const { getPlayers , createMatch, active } = usePlaygroundApi();
   const router = useRouter();
   const searchParams = useSearchParams();
   const playgroundId = searchParams.get("playground");
@@ -84,7 +86,7 @@ export default function AddMatchPage() {
 
   useEffect(() => {
     getPlayers().then((r) => setPlayers(r.data.data)).catch(() => toast.error("Failed to load players"));
-  }, []);
+  }, [active]);
 
   const setMatchField = (k, v) => setMatch((m) => ({ ...m, [k]: v }));
   const setStat = (idx, key, val) => setStats((prev) => {

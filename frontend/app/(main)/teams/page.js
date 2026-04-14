@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { getPlayers } from "@/lib/api";
+// import { getPlayers } from "@/lib/api";
+import { usePlaygroundApi } from "@/lib/usePlaygroundApi";
 import { RANK_CONFIG, getScoreColor } from "@/lib/utils";
 import { RankBadge, PlayerAvatar, ScoreDisplay } from "@/components/UI";
 import toast from "react-hot-toast";
@@ -107,6 +108,7 @@ const ROASTS = {
 };
 
 export default function TeamRandomizerPage() {
+  const { getPlayers , active } = usePlaygroundApi();
   const [allPlayers, setAllPlayers]   = useState([]);
   const [selected, setSelected]       = useState([]);
   const [teams, setTeams]             = useState(null);
@@ -120,7 +122,7 @@ export default function TeamRandomizerPage() {
 
   useEffect(() => {
     getPlayers({}).then(r => setAllPlayers(r.data.data)).catch(() => toast.error("Failed to load players")).finally(() => setLoading(false));
-  }, []);
+  }, [active]);
 
   const togglePlayer = (p) => {
     setTeams(null);
