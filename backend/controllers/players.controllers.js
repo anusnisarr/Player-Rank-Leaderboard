@@ -6,9 +6,10 @@ import { recomputePlayerStats }  from "../utils/recomputePlayerStats.js"
 // GET all players — leaderboard
 export const getAllPlayers = async (req, res) => {
   try {
-    const { sort = "avgScore", order = "desc", rank, team } = req.query;
+    const { sort = "avgScore", order = "desc", rank, team , playground } = req.query;
+
     const filter = {};
-    if (req.query.playground) filter.playground = req.query.playground;
+    if (playground) filter.playground = playground;
     if (rank) filter.rank = rank;
     if (team) filter.team = new RegExp(team, "i");
 
@@ -148,6 +149,42 @@ export const getPlaygroundStats = async (req, res) => {
       losses:       s.losses,
       winRate:      s.winRate,
     }))});
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const getAllPlayersPlaygroundStats = async (req, res) => {
+  try {
+    const { sort = "avgScore", order = "desc", rank, team , playground } = req.query;
+
+    const filter = {};
+    if (playground) filter.playground = playground;
+    if (rank) filter.rank = rank;
+    if (team) filter.team = new RegExp(team, "i");
+
+    const allowed = ["avgScore", "totalKills", "matchesPlayed", "wins", "name"];
+    const sortObj = { [allowed.includes(sort) ? sort : "avgScore"]: order === "asc" ? 1 : -1 };
+
+    const players = await Player.find(filter).sort(sortObj);
+
+    const out = players.map(p => ({
+      
+      _id: p._id,
+      name: p.name, team: p.team, country: p.country, avatar: p.avatar,
+      matchesPlayed: p.matchesPlayed, wins: p.wins, losses: p.losses,
+      score: p.score, rank: p.rank,
+      kd: p.kd, hsp: p.hsp, adr: p.adr, winRate: p.winRate,
+      avgKills: p.avgKills, avgDeaths: p.avgDeaths,
+      avgAssists: p.avgAssists, avgDamage: p.avgDamage, avgScore: p.avgScore,
+      totalKills: p.totalKills, totalDeaths: p.totalDeaths,
+      totalAssists: p.totalAssists, totalRounds: p.totalRounds,
+      totalHeadshots: p.totalHeadshots, totalDamage: p.totalDamage,
+      createdAt: p.createdAt
+      
+    }));
+
+    res.json({ success: true, data: out, count: out.length });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

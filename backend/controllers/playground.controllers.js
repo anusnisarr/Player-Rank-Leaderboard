@@ -56,9 +56,13 @@ export const createPlayground = async (req, res) => {
       code,
       password: hashed,
       description: description?.trim() || "",
-      owner:   req.user.id,
-      members: [req.user.id],
+      owner:   req.user.playerId,
+      members: [req.user.playerId],
     });
+
+    const player = await Player.findById(req.user.playerId);
+    player.playground.push(playground._id);
+    await player.save();
 
     res.status(201).json({ success: true, data: playground });
   } catch (err) {
@@ -83,11 +87,15 @@ export const joinPlayground = async (req, res) => {
     }
 
     // Already a member?
-    if (playground.members.includes(req.user.id)) {
+    if (playground.members.includes(req.user.playerId)) {
       return res.json({ success: true, data: playground, message: "Already a member" });
     }
 
-    playground.members.push(req.user.id);
+    const player = await Player.findById(req.user.playerId);
+    player.playground.push(playground._id);
+    await player.save();
+
+    playground.members.push(req.user.playerId);
     await playground.save();
 
     res.json({ success: true, data: playground });
@@ -99,7 +107,7 @@ export const joinPlayground = async (req, res) => {
 // ── GET /api/playgrounds/mine — My playgrounds ───────────────────────────────
 export const getMyPlaygrounds = async (req, res) => {
   try {
-    const playgrounds = await Playground.find({ members: req.user.id })
+    const playgrounds = await Playground.find({ members: req.user.playerId })
       .populate("owner", "username")
       .sort({ createdAt: -1 });
 
@@ -120,7 +128,7 @@ export const getPlayground = async (req, res) => {
     if (!playground) return res.status(404).json({ success: false, error: "Not found" });
 
     // Must be a member to view
-    const isMember = playground.members.some(m => m._id.toString() === req.user.id);
+    const isMember = playground.members.some(m => m._id.toString() === req.user.playerId);
     if (!isMember) return res.status(403).json({ success: false, error: "You are not a member of this playground" });
 
     res.json({ success: true, data: playground });
@@ -133,9 +141,13 @@ export const getPlayground = async (req, res) => {
 export const getLeaderboard = async (req, res) => {
   try {
     const { id } = req.params;
+    const playground = await Playground.findById(id);
+    const members = playground.members;
 
-    const stats = await PlayerStats.find({ playground: id })
-      .populate("player", "name team country avatar")
+    const stats = await PlayerStats.find({ 
+      playground: id,
+      player: { $in: members },
+      }).populate("player", "name team country avatar")
       .sort({ score: -1 });
 
     const data = stats.map(s => ({
@@ -173,11 +185,11 @@ export const leavePlayground = async (req, res) => {
     const playground = await Playground.findById(req.params.id);
     if (!playground) return res.status(404).json({ success: false, error: "Not found" });
 
-    if (playground.owner.toString() === req.user.id) {
+    if (playground.owner.toString() === req.user.playerId) {
       return res.status(400).json({ success: false, error: "Owner cannot leave — delete the playground instead" });
     }
 
-    playground.members = playground.members.filter(m => m.toString() !== req.user.id);
+    playground.members = playground.members.filter(m => m.toString() !== req.user.playerId);
     await playground.save();
 
     res.json({ success: true, message: "Left playground" });
@@ -191,7 +203,7 @@ export const deletePlayground = async (req, res) => {
   try {
     const playground = await Playground.findById(req.params.id);
     if (!playground) return res.status(404).json({ success: false, error: "Not found" });
-    if (playground.owner.toString() !== req.user.id) {
+    if (playground.owner.toString() !== req.user.playerId) {
       return res.status(403).json({ success: false, error: "Only the owner can delete this playground" });
     }
 
@@ -256,13 +268,13 @@ export const requestJoin = async (req, res) => {
       if (!match) return res.status(401).json({ success: false, error: "Wrong password" });
     }
 
-    if (playground.members.includes(req.user.id))
+    if (playground.members.includes(req.user.playerId))
       return res.json({ success: true, message: "Already a member" });
 
-    if (playground.pendingMembers.includes(req.user.id))
+    if (playground.pendingMembers.includes(req.user.playerId))
       return res.json({ success: true, message: "Request already pending" });
 
-    playground.pendingMembers.push(req.user.id);
+    playground.pendingMembers.push(req.user.playerId);
     await playground.save();
 
     res.json({ success: true, message: "Join request sent — waiting for admin approval" });
@@ -276,7 +288,7 @@ export const approveMember = async (req, res) => {
   try {
     const playground = await Playground.findById(req.params.id);
     if (!playground) return res.status(404).json({ success: false, error: "Not found" });
-    if (playground.owner.toString() !== req.user.id)
+    if (playground.owner.toString() !== req.user.playerId)
       return res.status(403).json({ success: false, error: "Only owner can approve" });
 
     const userId = req.params.userId;
@@ -295,7 +307,7 @@ export const rejectMember = async (req, res) => {
   try {
     const playground = await Playground.findById(req.params.id);
     if (!playground) return res.status(404).json({ success: false, error: "Not found" });
-    if (playground.owner.toString() !== req.user.id)
+    if (playground.owner.toString() !== req.user.playerId)
       return res.status(403).json({ success: false, error: "Only owner can reject" });
 
     playground.pendingMembers = playground.pendingMembers.filter(m => m.toString() !== req.params.userId);

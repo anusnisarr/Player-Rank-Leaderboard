@@ -18,6 +18,12 @@ const playerSchema = new mongoose.Schema(
     wins:           { type: Number, default: 0 },
     losses:         { type: Number, default: 0 },
     playground:     [{ type: mongoose.Schema.Types.ObjectId, ref: "Playground" }],
+    user: {
+      type:   mongoose.Schema.Types.ObjectId,
+      ref:    "User",
+      unique: true,
+      sparse: true,
+  },
 
     // Simple computed score (0-100) and rank label
     score: { type: Number, default: 0 },

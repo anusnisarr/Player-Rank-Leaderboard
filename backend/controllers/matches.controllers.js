@@ -68,7 +68,8 @@ const createMatch = async (req, res) => {
 
     // Update all players' career stats
     const playerIds = [...new Set(playerStats.map(s => s.player))];
-    await Promise.all(playerIds.map(playground ? recomputePlaygroundStats : recomputePlayerStats));
+  
+    await Promise.all(playerIds.map(id => playground ? recomputePlaygroundStats(id, playground) : recomputePlayerStats(id) ));
 
     // 🔔 Send notification to everyone
     await sendPushToAll(

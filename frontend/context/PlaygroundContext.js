@@ -5,6 +5,7 @@ import api from "@/lib/api";
 const PlaygroundContext = createContext(null);
 
 export function PlaygroundProvider({ children }) {
+  const [user, setUser] = useState(null);
   const [playgrounds, setPlaygrounds]   = useState([]);
   const [active, setActive]             = useState(null); // currently selected playground
   const [loading, setLoading]           = useState(true);
@@ -12,6 +13,10 @@ export function PlaygroundProvider({ children }) {
   useEffect(() => {
     fetchPlaygrounds();
   }, []);
+
+  useEffect(() => {
+  api.get("/auth/me").then(r => setUser(r.data.data)).catch(() => setUser(null));
+}, []);
 
   const fetchPlaygrounds = async () => {
     try {

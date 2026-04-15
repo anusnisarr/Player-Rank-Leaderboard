@@ -25,7 +25,6 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try { await api.post("/auth/logout"); } catch {}
-    document.cookie = "accessToken=; path=/; max-age=0";
     window.location.href = "/login";
   };
 
