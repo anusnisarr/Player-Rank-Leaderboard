@@ -1,18 +1,22 @@
 import Match from "../models/match.models.js";
 import Player from "../models/player.models.js";
+import PlayerStats  from "../models/PlayerStats.js";
 import { sendPushToAll } from "../controllers/notifications.controllers.js";
 
 // Recompute a player's career stats + score after any match change
-export const recomputePlayerStats = async (playerId) => {
+export const recomputePlayerStats = async (playerId , playgroundId) => {
+
 
   const oldPlayer = await Player.findById(playerId);
   const oldRank   = oldPlayer.rank;
 
-  const matches = await Match.find({ "playerStats.player": playerId });
+  const matches = await Match.find({ "playerStats.player": playerId, playground: playgroundId }) 
+ 
 
+  console.log(matches)
   const lastMatches = matches
-  .sort((a, b) => new Date(b.date) - new Date(a.date))
-  .slice(0, 5);
+  // .sort((a, b) => new Date(b.date) - new Date(a.date))
+  // .slice(0, 5);
 
   let totalKills = 0, totalDeaths = 0, totalAssists = 0;
   let totalHeadshots = 0, totalDamage = 0, totalRounds = 0;
@@ -30,24 +34,25 @@ export const recomputePlayerStats = async (playerId) => {
     totalHeadshots += s.headshots;
     totalDamage += s.damage;
     totalRounds += s.rounds;
+    scoreSum += s.score;
     if (s.won) wins++;
 
-    // Per-match score
-    const score = await Player.computeScore({
-      kills: Number(s.kills) || 0,
-      deaths: Number(s.deaths) || 0,
-      assists: Number(s.assists) || 0,
-      headshots: Number(s.headshots) || 0,
-      damage: Number(s.damage) || 0,
-      rounds: Number(s.rounds) || 1,
-      won: Boolean(s.won),
-    });
-    scoreSum += score;
+    // // Per-match score
+    // const score = await Player.computeScore({
+    //   kills: Number(s.kills) || 0,
+    //   deaths: Number(s.deaths) || 0,
+    //   assists: Number(s.assists) || 0,
+    //   headshots: Number(s.headshots) || 0,
+    //   damage: Number(s.damage) || 0,
+    //   rounds: Number(s.rounds) || 1,
+    //   won: Boolean(s.won),
+    // });
+    // scoreSum += score;
     
-    await Match.findOneAndUpdate(
-      { _id: match._id, "playerStats.player": playerId },
-      { "playerStats.$.score": score }
-    );
+    // await Match.findOneAndUpdate(
+    //   { _id: match._id, "playerStats.player": playerId },
+    //   { "playerStats.$.score": score }
+    // );
 
   }
 
@@ -66,6 +71,7 @@ for (const match of lastMatches) {
     rounds: Number(s.rounds) || 1,
     won: Boolean(s.won),
   });
+
   recentScoreSum += score;
 }
 
@@ -75,7 +81,6 @@ for (const match of lastMatches) {
   ? +(recentScoreSum / lastMatches.length).toFixed(0)
   : 0;
 
-
   const rank = matches.length >= 5 ? Player.computeRank(avgScore) : "Unranked";
 
   await Player.findByIdAndUpdate(playerId, {
@@ -84,6 +89,19 @@ for (const match of lastMatches) {
     matchesPlayed, wins, losses: matchesPlayed - wins,
     avgScore: avgScore, score:scoreSum, rank,
   });
+
+  if (playgroundId) {
+    await PlayerStats.findOneAndUpdate(
+      { player: playerId, playground: playgroundId },
+      {
+        totalKills, totalDeaths, totalAssists,
+        totalHeadshots, totalDamage, totalRounds,
+        matchesPlayed, wins, losses: matchesPlayed - wins,
+        avgScore: avgScore, score:scoreSum, rank,
+      }
+    );
+  }
+
 
   if (rank !== oldRank) {
   const rankOrder = ["Unranked", "Bronze", "Silver", "Gold", "Platinum", "Elite" , "Master"];
@@ -96,3 +114,4 @@ for (const match of lastMatches) {
     }
   }
 }
+ 

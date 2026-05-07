@@ -4,14 +4,16 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { usePlayground } from "@/context/PlaygroundContext";
 import api from "@/lib/api";
+import { getMe } from "@/lib/api";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const router   = useRouter();
+  const [user, setUser] = useState(null);
+  const router = useRouter();
   const { playgrounds, active, switchPlayground } = usePlayground();
 
-  const [menuOpen, setMenuOpen]   = useState(false);
-  const [pgOpen, setPgOpen]       = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [pgOpen, setPgOpen] = useState(false);
   const pgRef = useRef(null);
 
   // Close playground dropdown on outside click
@@ -23,21 +25,32 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  useEffect(() => {
+    const  getUser = (async () => {
+      try {
+        const response = await getMe();
+        setUser(response?.data?.data);
+      } catch (err) {
+        console.error("Failed to fetch user:", err);
+      }
+    })();
+  }, []);
+
   const handleLogout = async () => {
-    try { await api.post("/auth/logout"); } catch {}
+    try { await api.post("/auth/logout"); } catch { }
     window.location.href = "/login";
   };
 
   const navLinks = [
-    { href: "/",             label: "Leaderboard" },
-    { href: "/matches",      label: "Matches"     },
-    { href: "/add-match",    label: "Add Match"   },
-    { href: "/add-player",   label: "Add Player"  },
-    { href: "/teams",        label: "Teams"       },
-    { href: "/achievements", label: "Achievements"},
-    { href: "/notify",       label: "Notify"      },
-    { href: "/playgrounds",  label: "Playgrounds" },
-    { href: "/score-system", label: "Score System"},
+    { href: "/", label: "Leaderboard" },
+    { href: "/matches", label: "Matches" },
+    { href: "/add-match", label: "Add Match" },
+    { href: "/add-player", label: "Add Player" },
+    { href: "/teams", label: "Teams" },
+    { href: "/achievements", label: "Achievements" },
+    { href: "/notify", label: "Notify" },
+    { href: "/playgrounds", label: "Playgrounds" },
+    { href: "/score-system", label: "Score System" },
 
   ];
 
@@ -154,12 +167,22 @@ export default function Navbar() {
         ))}
       </div>
 
+      {/* ── USERNAME ── */}
+      <button
+        className="desktop-nav"
+        style={{ padding: "5px 12px", borderRadius: 5, fontSize: 12, color: "#7A7A8C", background: "transparent", border: "1px solid #1E1E22", cursor: "pointer", flexShrink: 0 }}>
+        {user?.username}
+      </button>
+
+
       {/* ── Logout ── */}
       <button onClick={handleLogout}
         className="desktop-nav"
         style={{ padding: "5px 12px", borderRadius: 5, fontSize: 12, color: "#7A7A8C", background: "transparent", border: "1px solid #1E1E22", cursor: "pointer", flexShrink: 0 }}>
         Logout
       </button>
+
+
 
       {/* ── Mobile hamburger ── */}
       <button onClick={() => setMenuOpen(o => !o)}

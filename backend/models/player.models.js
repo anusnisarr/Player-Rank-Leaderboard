@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const playerSchema = new mongoose.Schema(
   {
     name:    { type: String, required: true, trim: true, unique: true },
-    team:    { type: String, trim: true, default: "Unaffiliated" },
+    team:    { type: String, trim: true },
     avatar:  { type: String, default: null },
     country: { type: String, default: "" },
 
@@ -18,7 +18,7 @@ const playerSchema = new mongoose.Schema(
     wins:           { type: Number, default: 0 },
     losses:         { type: Number, default: 0 },
     playground:     [{ type: mongoose.Schema.Types.ObjectId, ref: "Playground" }],
-    user: {
+    user: { 
       type:   mongoose.Schema.Types.ObjectId,
       ref:    "User",
       unique: true,

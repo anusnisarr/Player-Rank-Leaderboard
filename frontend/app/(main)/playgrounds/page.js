@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
+import { getMe } from "@/lib/api";
 
 const RANK_COLORS = {
   Fragmaster: "#FFD700", Fragger: "#FF6B35",
@@ -20,6 +21,7 @@ export default function PlaygroundsPage() {
   const [selected, setSelected]       = useState(null); // viewing leaderboard
   const [leaderboard, setLeaderboard] = useState([]);
   const [loadingLb, setLoadingLb]     = useState(false);
+  const [user, setUser] = useState(null);
 
   // Create form
   const [createForm, setCreateForm] = useState({ name: "", password: "", description: "" });
@@ -27,12 +29,20 @@ export default function PlaygroundsPage() {
   const [joinForm, setJoinForm]     = useState({ code: "", password: "" });
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => { fetchPlaygrounds(); }, []);
+  useEffect(() => {
+    const loadUser = async () => {
+      const me = await getMe();
+      setUser(me);
+    };
+    loadUser();
+    fetchPlaygrounds();
+  }, []);
 
   const fetchPlaygrounds = async () => {
     try {
       const res = await api.get("/playgrounds/mine");
       setPlaygrounds(res.data.data);
+      console.log("Fetched playgrounds:", res.data.data);
       // Auto-select first
       if (res.data.data.length > 0 && !selected) {
         selectPlayground(res.data.data[0]);
@@ -43,6 +53,7 @@ export default function PlaygroundsPage() {
 
   const selectPlayground = async (pg) => {
     setSelected(pg);
+    console.log("Selected playground:", pg);
     setMode(null);
     setLoadingLb(true);
     try {
@@ -74,6 +85,22 @@ export default function PlaygroundsPage() {
     setSubmitting(true);
     try {
       const res = await api.post("/playgrounds/join", joinForm);
+      toast.success("You Have Joined this playground successfully.");
+      setJoinForm({ code: "", password: "" });
+      setMode(null);
+      await fetchPlaygrounds();
+      selectPlayground(res.data.data);
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Failed to join");
+    } finally { setSubmitting(false); }
+  };
+
+    const handleRequest = async (e) => {
+    e.preventDefault();
+    if (!joinForm.code.trim()) return toast.error("Enter a code");
+    setSubmitting(true);
+    try {
+      const res = await api.post("/playgrounds/request", joinForm);
       toast.success("Join request sent! Waiting for admin approval.");
       setJoinForm({ code: "", password: "" });
       setMode(null);
@@ -138,7 +165,7 @@ const rejectMember = async (pgId, userId) => {
         </p>
       </div>
 
-      {selected?.pendingMembers?.length > 0 && (
+{/* {selected?.pendingMembers?.length > 0 && (
   <div style={{ marginTop: 14, padding: "12px 14px", background: "rgba(255,215,0,0.05)", border: "1px solid rgba(255,215,0,0.2)", borderRadius: 7 }}>
     <div style={{ fontSize: 11, color: "#FFD700", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>
       ⏳ Pending Requests ({selected.pendingMembers.length})
@@ -153,6 +180,36 @@ const rejectMember = async (pgId, userId) => {
           </button>
           <button onClick={() => rejectMember(selected._id, u._id)}
             style={{ padding: "4px 12px", borderRadius: 5, fontSize: 11, background: "rgba(255,70,85,0.08)", color: "#FF4655", border: "1px solid rgba(255,70,85,0.2)", cursor: "pointer" }}>
+            ✕ Reject
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+)} */}
+
+{selected?.pendingMembers?.length > 0 && (
+  <div style={{ marginTop: 14, padding: "12px 14px", background: "rgba(255,215,0,0.05)", border: "1px solid rgba(255,215,0,0.2)", borderRadius: 7 }}>
+    <div style={{ fontSize: 11, color: "#FFD700", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>
+      ⏳ Pending Requests ({selected.pendingMembers.length})
+    </div>
+    {selected?.pendingMembers?.map(u => (
+      <div key={u._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: "1px solid #1E1E22" }}>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <span style={{ fontSize: 13, color: "#E8E8F0" }}>{u.name}</span>
+          <span style={{ fontSize: 12, color: "#A0A0B0" }}>{u.email}</span>
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button 
+            onClick={() => approveMember(selected._id, u._id)}
+            style={{ padding: "4px 12px", borderRadius: 5, fontSize: 11, background: "rgba(78,205,196,0.1)", color: "#4ECDC4", border: "1px solid rgba(78,205,196,0.3)", cursor: "pointer" }}
+          >
+            ✓ Approve
+          </button>
+          <button 
+            onClick={() => rejectMember(selected._id, u._id)}
+            style={{ padding: "4px 12px", borderRadius: 5, fontSize: 11, background: "rgba(255,70,85,0.08)", color: "#FF4655", border: "1px solid rgba(255,70,85,0.2)", cursor: "pointer" }}
+          >
             ✕ Reject
           </button>
         </div>
@@ -206,7 +263,7 @@ const rejectMember = async (pgId, userId) => {
           {mode === "join" && (
             <div className="card" style={{ padding: 16, marginBottom: 12 }}>
               <div style={{ fontSize: 11, color: "#4ECDC4", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14 }}>Join Playground</div>
-              <form onSubmit={handleJoin}>
+              <form onSubmit={handleRequest}>
                 <div style={{ marginBottom: 12 }}>
                   <label style={L}>Playground Code *</label>
                   <input style={{ ...inputStyle, fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.1em", fontSize: 15 }} placeholder="ALF-7X2" value={joinForm.code} onChange={e => setJoinForm(f => ({ ...f, code: e.target.value.toUpperCase() }))} required />
@@ -304,60 +361,85 @@ const rejectMember = async (pgId, userId) => {
                 </div>
               </div>
 
-              {/* Leaderboard */}
-              <div className="card" style={{ overflow: "hidden" }}>
-                {loadingLb ? (
-                  <div style={{ padding: 40, textAlign: "center", color: "#7A7A8C" }}>Loading leaderboard...</div>
-                ) : leaderboard.length === 0 ? (
-                  <div style={{ padding: 60, textAlign: "center" }}>
-                    <div style={{ fontSize: 36, marginBottom: 12 }}>📊</div>
-                    <div style={{ fontSize: 14, color: "#E8E8F0", marginBottom: 6 }}>No stats yet</div>
-                    <div style={{ fontSize: 12, color: "#7A7A8C" }}>Add a match to this playground to see rankings</div>
+              {/* ── Pending approvals (owner only) ── */}
+              {isOwner && detail.pendingMembers?.length > 0 && (
+                <div className="card" style={{ padding: "16px 18px", marginBottom: 14, border: "1px solid rgba(255,215,0,0.2)", background: "rgba(255,215,0,0.03)" }}>
+                  <div style={{ fontSize: 11, color: "#FFD700", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14 }}>
+                    ⏳ Pending Requests ({detail.pendingMembers.length})
                   </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {detail.pendingMembers.map(u => (
+                      <div key={u._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "#0A0A0B", borderRadius: 7, flexWrap: "wrap", gap: 8 }}>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#E8E8F0" }}>{u.username}</div>
+                          <div style={{ fontSize: 11, color: "#7A7A8C" }}>{u.email}</div>
+                        </div>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button onClick={() => handleApprove(u._id)}
+                            style={{ padding: "6px 14px", borderRadius: 5, fontSize: 11, fontWeight: 600, background: "rgba(78,205,196,0.12)", color: "#4ECDC4", border: "1px solid rgba(78,205,196,0.3)", cursor: "pointer" }}>
+                            ✓ Approve
+                          </button>
+                          <button onClick={() => handleReject(u._id)}
+                            style={{ padding: "6px 14px", borderRadius: 5, fontSize: 11, fontWeight: 600, background: "rgba(255,70,85,0.08)", color: "#FF4655", border: "1px solid rgba(255,70,85,0.2)", cursor: "pointer" }}>
+                            ✕ Reject
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+ 
+              {/* ── No pending message for non-owners ── */}
+              {!isOwner && (
+                <div style={{ padding: "10px 14px", background: "rgba(255,255,255,0.02)", border: "1px solid #1E1E22", borderRadius: 7, marginBottom: 14, fontSize: 12, color: "#7A7A8C" }}>
+                  ℹ️ Join requests are reviewed by the owner before members are added.
+                </div>
+              )}
+ 
+              {/* ── Members list ── */}
+              <div className="card" style={{ overflow: "hidden" }}>
+                <div style={{ padding: "14px 18px", borderBottom: "1px solid #1E1E22", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ fontSize: 11, color: "#FF4655", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    Members ({detail.members?.length || 0})
+                  </div>
+                </div>
+ 
+                {!detail.members?.length ? (
+                  <div style={{ padding: 40, textAlign: "center", color: "#3A3A42", fontSize: 13 }}>No members yet</div>
                 ) : (
-                  <div style={{ overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                      <thead>
-                        <tr>
-                          {["#","Player","Score","Rank","K/D","Kills","Deaths","HS%","Matches","W/L"].map(h => (
-                            <th key={h} style={{ padding: "10px 14px", color: "#7A7A8C", fontFamily: "'JetBrains Mono'", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.07em", borderBottom: "1px solid #1E1E22", whiteSpace: "nowrap", textAlign: "left" }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {leaderboard.map((p, idx) => {
-                          const rc = RANK_COLORS[p.rank] || "#6C757D";
-                          const ri = RANK_ICONS[p.rank]  || "🌱";
-                          return (
-                            <tr key={p._id} style={{ cursor: "pointer" }} onClick={() => router.push(`/player/${p._id}`)}>
-                              <td style={{ padding: "12px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 13, color: "#7A7A8C" }}>
-                                {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`}
-                              </td>
-                              <td style={{ padding: "12px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
-                                <div style={{ fontWeight: 600, fontSize: 13, color: "#E8E8F0" }}>{p.name}</div>
-                                <div style={{ fontSize: 11, color: "#7A7A8C" }}>{p.team}</div>
-                              </td>
-                              <td style={{ padding: "12px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 15, fontWeight: 700, color: rc }}>{p.score}</td>
-                              <td style={{ padding: "12px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)" }}>
-                                <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 5, background: `${rc}15`, color: rc, border: `1px solid ${rc}30`, fontWeight: 600 }}>
-                                  {ri} {p.rank}
+                  <div>
+                    {detail.members.map((m, idx) => {
+                      const memberIsOwner = m._id?.toString() === detail.owner?._id?.toString();
+                      return (
+                        <div key={m._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 18px", borderBottom: idx < detail.members.length - 1 ? "1px solid rgba(30,30,34,0.6)" : "none" }}>
+                          {/* Avatar */}
+                          <div style={{ width: 36, height: 36, borderRadius: 8, background: "rgba(255,70,85,0.1)", border: "1px solid rgba(255,70,85,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'JetBrains Mono'", fontSize: 13, fontWeight: 600, color: "#FF4655", flexShrink: 0 }}>
+                            {m.username?.[0]?.toUpperCase() || "?"}
+                          </div>
+ 
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: "#E8E8F0" }}>{m.username}</span>
+                              {memberIsOwner && (
+                                <span style={{ fontSize: 9, padding: "1px 6px", borderRadius: 4, background: "rgba(255,70,85,0.12)", color: "#FF4655", border: "1px solid rgba(255,70,85,0.25)", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                                  Owner
                                 </span>
-                              </td>
-                              <td style={{ padding: "12px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 13 }}>{p.kd}</td>
-                              <td style={{ padding: "12px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 13, color: "#4ECDC4" }}>{p.totalKills}</td>
-                              <td style={{ padding: "12px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 13, color: "#FF4655" }}>{p.totalDeaths}</td>
-                              <td style={{ padding: "12px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 13, color: "#FFD700" }}>{p.hsp}%</td>
-                              <td style={{ padding: "12px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 13 }}>{p.matchesPlayed}</td>
-                              <td style={{ padding: "12px 14px", borderBottom: "1px solid rgba(30,30,34,0.6)", fontFamily: "'JetBrains Mono'", fontSize: 13 }}>
-                                <span style={{ color: "#4ECDC4" }}>{p.wins}</span>
-                                <span style={{ color: "#3A3A42" }}>/</span>
-                                <span style={{ color: "#FF4655" }}>{p.losses}</span>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                              )}
+                            </div>
+                            <div style={{ fontSize: 11, color: "#7A7A8C", marginTop: 2 }}>{m.email}</div>
+                          </div>
+ 
+                          {/* Owner can remove non-owner members */}
+                          {isOwner && !memberIsOwner && (
+                            <button onClick={() => handleRemoveMember(m._id)}
+                              style={{ padding: "4px 10px", borderRadius: 5, fontSize: 10, color: "#7A7A8C", background: "transparent", border: "1px solid #3A3A42", cursor: "pointer" }}>
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

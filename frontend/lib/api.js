@@ -39,5 +39,6 @@ export const deleteMatch = (id) => api.delete(`/matches/${id}`);
 
 // utils
 export const getHealth = () => api.get("/health");
+export const getMe = () => api.get("/auth/me");
 
 export default api;

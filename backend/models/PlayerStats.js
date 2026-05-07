@@ -19,7 +19,8 @@ const playerStatsSchema = new mongoose.Schema({
 
   // Computed
   score: { type: Number, default: 0 },
-  rank:  { type: String, default: "Rookie" },
+  avgScore: { type: Number, default: 0 },
+  rank:  { type: String, default: "Bronze" },
 }, {
   timestamps: true,
   toJSON:   { virtuals: true },

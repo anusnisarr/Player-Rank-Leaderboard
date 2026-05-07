@@ -108,9 +108,11 @@ export const joinPlayground = async (req, res) => {
 export const getMyPlaygrounds = async (req, res) => {
   try {
     const playgrounds = await Playground.find({ members: req.user.playerId })
-      .populate("owner", "username")
+      .populate("owner", "name")
+      .populate("members", "name")
+      .populate("pendingMembers", "name")
       .sort({ createdAt: -1 });
-
+    console.log(playgrounds)
     res.json({ success: true, data: playgrounds });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -121,9 +123,9 @@ export const getMyPlaygrounds = async (req, res) => {
 export const getPlayground = async (req, res) => {
   try {
     const playground = await Playground.findById(req.params.id)
-      .populate("owner", "username")
-      .populate("members", "username")
-      .populate("pendingMembers", "username");
+      .populate("owner", "name")
+      .populate("members", "name")
+      .populate("pendingMembers", "name");
 
     if (!playground) return res.status(404).json({ success: false, error: "Not found" });
 
@@ -226,6 +228,7 @@ export const recomputePlaygroundStats = async (playerId, playgroundId) => {
   let totalKills=0, totalDeaths=0, totalAssists=0;
   let totalHeadshots=0, totalDamage=0, totalRounds=0;
   let wins=0, scoreSum=0;
+
   const matchesPlayed = matches.length;
 
   for (const match of matches) {
@@ -238,6 +241,7 @@ export const recomputePlaygroundStats = async (playerId, playgroundId) => {
     totalDamage    += s.damage;
     totalRounds    += s.rounds;
     if (s.won) wins++;
+    
     scoreSum += computeScore({
       kills: Number(s.kills)||0, deaths: Number(s.deaths)||0,
       assists: Number(s.assists)||0, headshots: Number(s.headshots)||0,

@@ -58,7 +58,7 @@ const createMatch = async (req, res) => {
 
       const adr = +(damage / rounds).toFixed(1);
       const kd = deaths > 0 ? +(kills / deaths).toFixed(2) : +kills.toFixed(2);
-      const score = Player.computeScore({ kills, deaths, assists, hsp, damage, rounds , won });
+      const score = Player.computeScore({ kills, deaths, assists, headshots, damage, rounds , won });
 
       return { ...s, kills, deaths, assists, headshots, damage, kast, rounds, adr, kd, score };
 
@@ -69,7 +69,7 @@ const createMatch = async (req, res) => {
     // Update all players' career stats
     const playerIds = [...new Set(playerStats.map(s => s.player))];
   
-    await Promise.all(playerIds.map(id => playground ? recomputePlaygroundStats(id, playground) : recomputePlayerStats(id) ));
+    await Promise.all(playerIds.map(id => playground ? recomputePlayerStats(id, playground) : recomputePlayerStats(id) ));
 
     // 🔔 Send notification to everyone
     await sendPushToAll(
