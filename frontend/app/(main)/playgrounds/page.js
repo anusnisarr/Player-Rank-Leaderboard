@@ -18,49 +18,42 @@ export default function PlaygroundsPage() {
   const [playgrounds, setPlaygrounds] = useState([]);
   const [loading, setLoading]         = useState(true);
   const [mode, setMode]               = useState(null); // "create" | "join"
-  const [selected, setSelected]       = useState(null); // viewing leaderboard
+  const [selected, setSelected]       = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
   const [loadingLb, setLoadingLb]     = useState(false);
   const [user, setUser] = useState(null);
-
-  // Create form
+  const [isOwner, setIsOwner] = useState(null);
   const [createForm, setCreateForm] = useState({ name: "", password: "", description: "" });
-  // Join form
   const [joinForm, setJoinForm]     = useState({ code: "", password: "" });
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const loadUser = async () => {
+   (async () => {
       const me = await getMe();
-      setUser(me);
-    };
-    loadUser();
-    fetchPlaygrounds();
+      const currentUser = me.data.data;
+      setUser(currentUser);
+      fetchPlaygrounds(currentUser);
+    })();
   }, []);
 
-  const fetchPlaygrounds = async () => {
+  const fetchPlaygrounds = async (currentUser) => {
     try {
       const res = await api.get("/playgrounds/mine");
       setPlaygrounds(res.data.data);
       console.log("Fetched playgrounds:", res.data.data);
       // Auto-select first
       if (res.data.data.length > 0 && !selected) {
-        selectPlayground(res.data.data[0]);
+        selectPlayground(res.data.data[0] , currentUser);
       }
     } catch { toast.error("Failed to load playgrounds"); }
     finally { setLoading(false); }
   };
 
-  const selectPlayground = async (pg) => {
+  const selectPlayground = (pg , currentUser = user) => {
+    setIsOwner(pg?.owner._id === currentUser?.playerId);
     setSelected(pg);
-    console.log("Selected playground:", pg);
     setMode(null);
     setLoadingLb(true);
-    try {
-      const res = await api.get(`/playgrounds/${pg._id}/leaderboard`);
-      setLeaderboard(res.data.data);
-    } catch { toast.error("Failed to load leaderboard"); }
-    finally { setLoadingLb(false); }
   };
 
   const handleCreate = async (e) => {
@@ -164,59 +157,6 @@ const rejectMember = async (pgId, userId) => {
           Private lobbies with their own leaderboards — invite your squad, track separately
         </p>
       </div>
-
-{/* {selected?.pendingMembers?.length > 0 && (
-  <div style={{ marginTop: 14, padding: "12px 14px", background: "rgba(255,215,0,0.05)", border: "1px solid rgba(255,215,0,0.2)", borderRadius: 7 }}>
-    <div style={{ fontSize: 11, color: "#FFD700", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>
-      ⏳ Pending Requests ({selected.pendingMembers.length})
-    </div>
-    {selected?.pendingMembers?.map(u => (
-      <div key={u._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: "1px solid #1E1E22" }}>
-        <span style={{ fontSize: 13, color: "#E8E8F0" }}>{u.username}</span>
-        <div style={{ display: "flex", gap: 6 }}>
-          <button onClick={() => approveMember(selected._id, u._id)}
-            style={{ padding: "4px 12px", borderRadius: 5, fontSize: 11, background: "rgba(78,205,196,0.1)", color: "#4ECDC4", border: "1px solid rgba(78,205,196,0.3)", cursor: "pointer" }}>
-            ✓ Approve
-          </button>
-          <button onClick={() => rejectMember(selected._id, u._id)}
-            style={{ padding: "4px 12px", borderRadius: 5, fontSize: 11, background: "rgba(255,70,85,0.08)", color: "#FF4655", border: "1px solid rgba(255,70,85,0.2)", cursor: "pointer" }}>
-            ✕ Reject
-          </button>
-        </div>
-      </div>
-    ))}
-  </div>
-)} */}
-
-{selected?.pendingMembers?.length > 0 && (
-  <div style={{ marginTop: 14, padding: "12px 14px", background: "rgba(255,215,0,0.05)", border: "1px solid rgba(255,215,0,0.2)", borderRadius: 7 }}>
-    <div style={{ fontSize: 11, color: "#FFD700", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>
-      ⏳ Pending Requests ({selected.pendingMembers.length})
-    </div>
-    {selected?.pendingMembers?.map(u => (
-      <div key={u._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: "1px solid #1E1E22" }}>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <span style={{ fontSize: 13, color: "#E8E8F0" }}>{u.name}</span>
-          <span style={{ fontSize: 12, color: "#A0A0B0" }}>{u.email}</span>
-        </div>
-        <div style={{ display: "flex", gap: 6 }}>
-          <button 
-            onClick={() => approveMember(selected._id, u._id)}
-            style={{ padding: "4px 12px", borderRadius: 5, fontSize: 11, background: "rgba(78,205,196,0.1)", color: "#4ECDC4", border: "1px solid rgba(78,205,196,0.3)", cursor: "pointer" }}
-          >
-            ✓ Approve
-          </button>
-          <button 
-            onClick={() => rejectMember(selected._id, u._id)}
-            style={{ padding: "4px 12px", borderRadius: 5, fontSize: 11, background: "rgba(255,70,85,0.08)", color: "#FF4655", border: "1px solid rgba(255,70,85,0.2)", cursor: "pointer" }}
-          >
-            ✕ Reject
-          </button>
-        </div>
-      </div>
-    ))}
-  </div>
-)}
 
       <div className="pg-layout">
 
@@ -345,14 +285,17 @@ const rejectMember = async (pgId, userId) => {
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => router.push(`/add-match?playground=${selected._id}`)}
-                      className="btn-primary" style={{ fontSize: 12, padding: "8px 14px" }}>
-                      + Add Match
-                    </button>
-                    <button onClick={() => handleLeave(selected._id)}
+
+                    {!isOwner && (<button onClick={() => handleLeave(selected._id)}
                       style={{ fontSize: 11, padding: "8px 12px", borderRadius: 6, background: "transparent", border: "1px solid #3A3A42", color: "#7A7A8C", cursor: "pointer" }}>
                       Leave
+                    </button>)}
+
+                    <button onClick={() => setMode(mode === "requests" ? null : "requests")}
+                      style={{ fontSize: 11, padding: "8px 12px", borderRadius: 6,  cursor: "pointer", background: "rgba(255, 217, 0, 0.25)" , color: "rgb(255, 230, 86)", border: "1px solid rgb(255, 230, 86)" , transition: "all 0.15s" }}>
+                      Requests ({selected.pendingMembers?.length || 0})
                     </button>
+
                     <button onClick={() => handleDelete(selected._id)}
                       style={{ fontSize: 11, padding: "8px 12px", borderRadius: 6, background: "rgba(255,70,85,0.08)", border: "1px solid rgba(255,70,85,0.2)", color: "#FF4655", cursor: "pointer" }}>
                       Delete
@@ -362,16 +305,16 @@ const rejectMember = async (pgId, userId) => {
               </div>
 
               {/* ── Pending approvals (owner only) ── */}
-              {isOwner && detail.pendingMembers?.length > 0 && (
+              {isOwner && selected.pendingMembers?.length > 0 &&  mode === "requests" && (
                 <div className="card" style={{ padding: "16px 18px", marginBottom: 14, border: "1px solid rgba(255,215,0,0.2)", background: "rgba(255,215,0,0.03)" }}>
                   <div style={{ fontSize: 11, color: "#FFD700", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14 }}>
-                    ⏳ Pending Requests ({detail.pendingMembers.length})
+                    ⏳ Pending Requests ({selected.pendingMembers.length})
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {detail.pendingMembers.map(u => (
+                    {selected.pendingMembers.map(u => (
                       <div key={u._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "#0A0A0B", borderRadius: 7, flexWrap: "wrap", gap: 8 }}>
                         <div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: "#E8E8F0" }}>{u.username}</div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#E8E8F0" }}>{u.name}</div>
                           <div style={{ fontSize: 11, color: "#7A7A8C" }}>{u.email}</div>
                         </div>
                         <div style={{ display: "flex", gap: 6 }}>
@@ -401,26 +344,26 @@ const rejectMember = async (pgId, userId) => {
               <div className="card" style={{ overflow: "hidden" }}>
                 <div style={{ padding: "14px 18px", borderBottom: "1px solid #1E1E22", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ fontSize: 11, color: "#FF4655", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                    Members ({detail.members?.length || 0})
+                    Members ({selected.members?.length || 0})
                   </div>
                 </div>
  
-                {!detail.members?.length ? (
+                {!selected.members?.length ? (
                   <div style={{ padding: 40, textAlign: "center", color: "#3A3A42", fontSize: 13 }}>No members yet</div>
                 ) : (
                   <div>
-                    {detail.members.map((m, idx) => {
-                      const memberIsOwner = m._id?.toString() === detail.owner?._id?.toString();
+                    {selected.members.map((m, idx) => {
+                      const memberIsOwner = m._id?.toString() === selected.owner?._id?.toString();
                       return (
-                        <div key={m._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 18px", borderBottom: idx < detail.members.length - 1 ? "1px solid rgba(30,30,34,0.6)" : "none" }}>
+                        <div key={m._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 18px", borderBottom: idx < selected.members.length - 1 ? "1px solid rgba(30,30,34,0.6)" : "none" }}>
                           {/* Avatar */}
                           <div style={{ width: 36, height: 36, borderRadius: 8, background: "rgba(255,70,85,0.1)", border: "1px solid rgba(255,70,85,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'JetBrains Mono'", fontSize: 13, fontWeight: 600, color: "#FF4655", flexShrink: 0 }}>
-                            {m.username?.[0]?.toUpperCase() || "?"}
+                            {m.name?.[0]?.toUpperCase() || "?"}
                           </div>
  
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <span style={{ fontSize: 13, fontWeight: 600, color: "#E8E8F0" }}>{m.username}</span>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: "#E8E8F0" }}>{m.name}</span>
                               {memberIsOwner && (
                                 <span style={{ fontSize: 9, padding: "1px 6px", borderRadius: 4, background: "rgba(255,70,85,0.12)", color: "#FF4655", border: "1px solid rgba(255,70,85,0.25)", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                                   Owner
