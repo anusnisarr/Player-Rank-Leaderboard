@@ -4,13 +4,13 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { usePlayground } from "@/context/PlaygroundContext";
 import api from "@/lib/api";
-import { getMe } from "@/lib/api";
+import { useUser } from "@/context/AuthContext";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [user, setUser] = useState(null);
   const router = useRouter();
   const { playgrounds, active, switchPlayground } = usePlayground();
+  const { user } = useUser();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [pgOpen, setPgOpen] = useState(false);
@@ -23,17 +23,6 @@ export default function Navbar() {
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  useEffect(() => {
-    const  getUser = (async () => {
-      try {
-        const response = await getMe();
-        setUser(response?.data?.data);
-      } catch (err) {
-        console.error("Failed to fetch user:", err);
-      }
-    })();
   }, []);
 
   const handleLogout = async () => {

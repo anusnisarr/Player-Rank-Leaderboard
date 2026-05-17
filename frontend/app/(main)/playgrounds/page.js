@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 import { getMe } from "@/lib/api";
+import { useUser } from "@/context/AuthContext";
 
 const RANK_COLORS = {
   Fragmaster: "#FFD700", Fragger: "#FF6B35",
@@ -15,45 +16,52 @@ const RANK_ICONS = {
 
 export default function PlaygroundsPage() {
   const router = useRouter();
+  const { user } = useUser();
   const [playgrounds, setPlaygrounds] = useState([]);
   const [loading, setLoading]         = useState(true);
   const [mode, setMode]               = useState(null); // "create" | "join"
   const [selected, setSelected]       = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
-  const [loadingLb, setLoadingLb]     = useState(false);
-  const [user, setUser] = useState(null);
   const [isOwner, setIsOwner] = useState(null);
   const [createForm, setCreateForm] = useState({ name: "", password: "", description: "" });
   const [joinForm, setJoinForm]     = useState({ code: "", password: "" });
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-   (async () => {
-      const me = await getMe();
-      const currentUser = me.data.data;
-      setUser(currentUser);
-      fetchPlaygrounds(currentUser);
-    })();
-  }, []);
+   useEffect(() => {
+    if(user){
+      fetchPlaygrounds();
+    }
+  }, [user]);
 
-  const fetchPlaygrounds = async (currentUser) => {
+
+  const fetchPlaygrounds = async () => {
     try {
       const res = await api.get("/playgrounds/mine");
       setPlaygrounds(res.data.data);
-      console.log("Fetched playgrounds:", res.data.data);
       // Auto-select first
       if (res.data.data.length > 0 && !selected) {
-        selectPlayground(res.data.data[0] , currentUser);
+        setSelected(res.data.data[0]);
+        setMode(null);
+        setIsOwner(res.data.data?.owner._id === user?.playerId);
       }
-    } catch { toast.error("Failed to load playgrounds"); }
+    } catch (err) {
+       toast.error("Failed to load playgrounds");
+    }
     finally { setLoading(false); }
+
   };
 
-  const selectPlayground = (pg , currentUser = user) => {
-    setIsOwner(pg?.owner._id === currentUser?.playerId);
-    setSelected(pg);
+  const selectPlayground = async (pg) => {
+    try {
+        const res = await api.get(`/playgrounds/${pg._id}`)
+        setSelected(res.data.data);
+        setIsOwner(res.data.data?.owner._id === user?.playerId);
+        setMode(null);
+    } catch (err) {
+        toast.error("Failed to load playground");
+        console.log(err)
+    }
     setMode(null);
-    setLoadingLb(true);
   };
 
   const handleCreate = async (e) => {
@@ -66,7 +74,6 @@ export default function PlaygroundsPage() {
       setCreateForm({ name: "", password: "", description: "" });
       setMode(null);
       await fetchPlaygrounds();
-      selectPlayground(res.data.data);
     } catch (err) {
       toast.error(err.response?.data?.error || "Failed to create");
     } finally { setSubmitting(false); }
@@ -88,7 +95,7 @@ export default function PlaygroundsPage() {
     } finally { setSubmitting(false); }
   };
 
-    const handleRequest = async (e) => {
+  const handleRequest = async (e) => {
     e.preventDefault();
     if (!joinForm.code.trim()) return toast.error("Enter a code");
     setSubmitting(true);
@@ -97,8 +104,8 @@ export default function PlaygroundsPage() {
       toast.success("Join request sent! Waiting for admin approval.");
       setJoinForm({ code: "", password: "" });
       setMode(null);
-      await fetchPlaygrounds();
-      selectPlayground(res.data.data);
+      // await fetchPlaygrounds();
+      // setSelected(res.data.data);
     } catch (err) {
       toast.error(err.response?.data?.error || "Failed to join");
     } finally { setSubmitting(false); }
@@ -126,7 +133,8 @@ export default function PlaygroundsPage() {
     } catch (err) { toast.error(err.response?.data?.error || "Failed"); }
   };
 
-  const approveMember = async (pgId, userId) => {
+  const handleApprove = async (userId) => {
+    const pgId = selected?._id
   try {
     await api.post(`/playgrounds/${pgId}/approve/${userId}`);
     toast.success("Member approved!");
@@ -134,13 +142,14 @@ export default function PlaygroundsPage() {
   } catch (err) { toast.error(err.response?.data?.error || "Failed"); }
 };
 
-const rejectMember = async (pgId, userId) => {
-  try {
-    await api.post(`/playgrounds/${pgId}/reject/${userId}`);
-    toast.success("Request rejected");
-    selectPlayground(selected);
-  } catch (err) { toast.error(err.response?.data?.error || "Failed"); }
-};
+  const handleReject = async (userId) => {
+    const pgId = selected?._id
+    try {
+      await api.post(`/playgrounds/${pgId}/reject/${userId}`);
+      toast.success("Request rejected");
+      selectPlayground(selected);
+    } catch (err) { toast.error(err.response?.data?.error || "Failed"); }
+  };
 
   const L = { fontSize: 10, color: "#7A7A8C", fontFamily: "'JetBrains Mono'", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, display: "block" };
   const inputStyle = { width: "100%", boxSizing: "border-box", background: "#0A0A0B", border: "1px solid #1E1E22", borderRadius: 7, padding: "10px 14px", color: "#E8E8F0", fontSize: 13, outline: "none", fontFamily: "inherit" };
@@ -291,10 +300,10 @@ const rejectMember = async (pgId, userId) => {
                       Leave
                     </button>)}
 
-                    <button onClick={() => setMode(mode === "requests" ? null : "requests")}
-                      style={{ fontSize: 11, padding: "8px 12px", borderRadius: 6,  cursor: "pointer", background: "rgba(255, 217, 0, 0.25)" , color: "rgb(255, 230, 86)", border: "1px solid rgb(255, 230, 86)" , transition: "all 0.15s" }}>
-                      Requests ({selected.pendingMembers?.length || 0})
-                    </button>
+                    {isOwner && (<button onClick={() => setMode(mode === "requests" ? null : "requests")}
+                      style={{ fontSize: 11, padding: "8px 12px", borderRadius: 6,  cursor: "pointer", background: selected.pendingMembers?.length > 0 ? "rgba(255, 217, 0, 0.25)" : "transparent" , color: selected.pendingMembers?.length > 0 ? "rgb(255, 230, 86)" : "#7A7A8C", border: `1px solid  ${selected.pendingMembers?.length > 0 ? "rgb(255, 230, 86)" : "#1E1E22"}` , transition: "all 0.15s" }}>
+                      Requests {selected.pendingMembers?.length || 0}
+                    </button>)}
 
                     <button onClick={() => handleDelete(selected._id)}
                       style={{ fontSize: 11, padding: "8px 12px", borderRadius: 6, background: "rgba(255,70,85,0.08)", border: "1px solid rgba(255,70,85,0.2)", color: "#FF4655", cursor: "pointer" }}>

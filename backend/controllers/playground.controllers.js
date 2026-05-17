@@ -130,7 +130,7 @@ export const getPlayground = async (req, res) => {
     if (!playground) return res.status(404).json({ success: false, error: "Not found" });
 
     // Must be a member to view
-    const isMember = playground.members.some(m => m._id.toString() === req.user.playerId);
+    const isMember = playground.members.some(m => m._id.toString() === req.user.playerId.toString());
     if (!isMember) return res.status(403).json({ success: false, error: "You are not a member of this playground" });
 
     res.json({ success: true, data: playground });
@@ -292,7 +292,7 @@ export const approveMember = async (req, res) => {
   try {
     const playground = await Playground.findById(req.params.id);
     if (!playground) return res.status(404).json({ success: false, error: "Not found" });
-    if (playground.owner.toString() !== req.user.playerId)
+    if (playground.owner.toString() !== req.user.playerId.toString())
       return res.status(403).json({ success: false, error: "Only owner can approve" });
 
     const userId = req.params.userId;
@@ -311,7 +311,7 @@ export const rejectMember = async (req, res) => {
   try {
     const playground = await Playground.findById(req.params.id);
     if (!playground) return res.status(404).json({ success: false, error: "Not found" });
-    if (playground.owner.toString() !== req.user.playerId)
+    if (playground.owner.toString() !== req.user.playerId.toString())
       return res.status(403).json({ success: false, error: "Only owner can reject" });
 
     playground.pendingMembers = playground.pendingMembers.filter(m => m.toString() !== req.params.userId);

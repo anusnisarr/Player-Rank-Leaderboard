@@ -1,6 +1,6 @@
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
-import { PlaygroundProvider } from "@/context/PlaygroundContext";
+
 export const metadata = {
   title: "RANKIFY",
   description: "Track your game stats and rankings",
@@ -31,7 +31,6 @@ export default function RootLayout({ children }) {
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" />
       </head>
       <body style={{ margin: 0, background: "#0A0A0B", color: "#E8E8F0", minHeight: "100vh" }}>
-        <PlaygroundProvider>
           <main style={{ paddingTop: 56 }}>
             {children}
           </main>
@@ -43,7 +42,6 @@ export default function RootLayout({ children }) {
               error:   { iconTheme: { primary: "#FF4655", secondary: "#0A0A0B" } },
             }}
           />
-        </PlaygroundProvider>
       </body>
     </html>
   );

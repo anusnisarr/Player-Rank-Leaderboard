@@ -57,7 +57,6 @@ export default function LeaderboardPage() {
   useEffect(() => { fetchTeams(); }, [fetchTeams]);
 
   const handleSort = (field) => {
-    console.log(players);
     
     if (sortField === field) setSortOrder(o => o === "desc" ? "asc" : "desc");
     else { setSortField(field); setSortOrder("desc"); }
